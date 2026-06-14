@@ -82,6 +82,7 @@ function insertion(input) {
       f.push(mk(arr, ids, { comparing: [j], sorted: allIdx(i), note: `arr[${j}]=${arr[j]} > key=${key} → 오른쪽으로 한 칸 이동` }))
       arr[j + 1] = arr[j]
       ids[j + 1] = ids[j]
+      ids[j] = keyId // 떠 있는 key 원소의 id를 빈 슬롯에 둠 (id 중복 방지)
       j--
       f.push(mk(arr, ids, { swapping: [j + 1, j + 2], sorted: allIdx(i), note: `이동 후` }))
     }
@@ -109,6 +110,7 @@ function shell(input) {
         f.push(mk(arr, ids, { comparing: [j - gap, j], note: `arr[${j - gap}]=${arr[j - gap]} > ${temp} → ${gap}칸 이동` }))
         arr[j] = arr[j - gap]
         ids[j] = ids[j - gap]
+        ids[j - gap] = tempId // 떠 있는 temp 원소의 id를 빈 슬롯에 둠 (id 중복 방지)
         j -= gap
         f.push(mk(arr, ids, { swapping: [j, j + gap], note: '이동 후' }))
       }
@@ -184,11 +186,12 @@ function merge(input) {
     }
     while (i <= mid) { temp.push(arr[i]); tempIds.push(ids[i]); i++ }
     while (j <= hi) { temp.push(arr[j]); tempIds.push(ids[j]); j++ }
+    // 전체 되쓰기 후 한 프레임만 push (중간 id 중복 방지 + 원소들이 병합 위치로 한 번에 슬라이드)
     for (let k = 0; k < temp.length; k++) {
       arr[lo + k] = temp[k]
       ids[lo + k] = tempIds[k]
-      f.push(mk(arr, ids, { swapping: [lo + k], note: `위치 ${lo + k} ← ${temp[k]}` }))
     }
+    f.push(mk(arr, ids, { swapping: range(lo, hi), note: `병합 결과: [${lo}..${hi}] = ${temp.join(', ')}` }))
   }
   function range(a, b) { return Array.from({ length: b - a + 1 }, (_, k) => a + k) }
   ms(0, n - 1)

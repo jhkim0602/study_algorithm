@@ -3,10 +3,12 @@ import { SORTERS } from './sortFrames.js'
 import { useStepPlayer, VizControls } from './StepPlayer.jsx'
 
 function parseArray(text) {
+  // 비음수 정수 0~99로 정제 (도수 정렬의 소수/음수/거대값 크래시 방지, 비교 정렬에도 안전)
   return text
     .split(/[,\s]+/)
     .map((s) => Number(s))
     .filter((x) => Number.isFinite(x))
+    .map((x) => Math.min(99, Math.abs(Math.round(x))))
     .slice(0, 12)
 }
 
@@ -33,7 +35,7 @@ export default function SortVisualizer({ algo: presetAlgo, lock = false }) {
 
   const n = frame.arr.length
   const ids = frame.ids || frame.arr.map((_, i) => i) // 안전 가드
-  const maxV = Math.max(...frame.arr, 1)
+  const maxV = Math.max(...frame.arr.map((x) => Math.abs(x)), 1)
   const BAR_W = 34
   const GAP = 16
   const SLOT = BAR_W + GAP
@@ -77,7 +79,7 @@ export default function SortVisualizer({ algo: presetAlgo, lock = false }) {
             .map((id, idx) => ({ id, idx, value: frame.arr[idx], lift: frame.swapping?.includes(idx), color: colorOf(idx) }))
             .sort((a, b) => a.id - b.id)
             .map((el) => {
-              const h = 16 + (el.value / maxV) * (BAR_AREA - 48)
+              const h = 16 + (Math.abs(el.value) / maxV) * (BAR_AREA - 48)
               return (
                 <div
                   key={el.id}
