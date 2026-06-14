@@ -509,9 +509,24 @@ a:hover { text-decoration: underline; }
 .viz-btn.primary:hover:not(:disabled) { filter: brightness(1.06); color: #fff; }
 .viz-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .viz-stage { width: 100%; overflow-x: auto; }
-/* 막대 부드러운 전환(애니메이션) */
-.sortbar { transition: y 0.32s ease, height 0.32s ease, fill 0.18s ease; }
-.sortbar-top { transition: y 0.32s ease; }
+/* 정렬 시각화: id 기반 이동 막대 (들어올려 자리바꿈) */
+.sortviz-track { position: relative; }
+.sortviz-el {
+  position: absolute; left: 0; top: 0; height: 100%;
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+  transition: transform 0.36s cubic-bezier(0.34, 1.1, 0.5, 1);
+  z-index: 1;
+}
+.sortviz-el.lift { z-index: 5; }
+.sortviz-val { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.sortviz-bar {
+  width: 34px; border-radius: 5px 5px 0 0;
+  transition: height 0.3s ease, background 0.18s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.sortviz-el.lift .sortviz-bar { box-shadow: 0 9px 16px rgba(0, 0, 0, 0.22); }
+.sortviz-axis { display: flex; margin-top: 5px; }
+.sortviz-axis-cell { text-align: center; font-size: 11px; color: var(--text-faint); }
 .cs-bar { transition: height 0.28s ease, background 0.18s ease; }
 
 /* 정렬 레이스 */

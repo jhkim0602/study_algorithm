@@ -31,11 +31,13 @@ export default function SortVisualizer({ algo: presetAlgo, lock = false }) {
     setApplied({ algo, arr })
   }
 
+  const n = frame.arr.length
+  const ids = frame.ids || frame.arr.map((_, i) => i) // 안전 가드
   const maxV = Math.max(...frame.arr, 1)
-  const W = Math.max(frame.arr.length * 54, 360)
-  const H = 230
-  const barW = 38
-  const gap = (W - frame.arr.length * barW) / (frame.arr.length + 1)
+  const BAR_W = 34
+  const GAP = 16
+  const SLOT = BAR_W + GAP
+  const BAR_AREA = 180
 
   const colorOf = (i) => {
     if (frame.sorted?.includes(i)) return 'var(--viz-sorted)'
@@ -70,20 +72,29 @@ export default function SortVisualizer({ algo: presetAlgo, lock = false }) {
       <VizControls player={player} />
 
       <div className="viz-stage">
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="xMidYMid meet">
-          {frame.arr.map((v, i) => {
-            const barH = 24 + (v / maxV) * (H - 70)
-            const x = gap + i * (barW + gap)
-            const y = H - 30 - barH
-            return (
-              <g key={i}>
-                <rect className="sortbar" x={x} y={y} width={barW} height={barH} rx="4" fill={colorOf(i)} />
-                <text className="sortbar-top" x={x + barW / 2} y={y - 7} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{v}</text>
-                <text x={x + barW / 2} y={H - 11} textAnchor="middle" fontSize="11" fill="var(--text-faint)">{i}</text>
-              </g>
-            )
-          })}
-        </svg>
+        <div className="sortviz-track" style={{ width: n * SLOT + 'px', height: BAR_AREA + 'px' }}>
+          {ids
+            .map((id, idx) => ({ id, idx, value: frame.arr[idx], lift: frame.swapping?.includes(idx), color: colorOf(idx) }))
+            .sort((a, b) => a.id - b.id)
+            .map((el) => {
+              const h = 16 + (el.value / maxV) * (BAR_AREA - 48)
+              return (
+                <div
+                  key={el.id}
+                  className={`sortviz-el${el.lift ? ' lift' : ''}`}
+                  style={{ width: SLOT + 'px', transform: `translateX(${el.idx * SLOT}px) translateY(${el.lift ? -18 : 0}px)` }}
+                >
+                  <div className="sortviz-val">{el.value}</div>
+                  <div className="sortviz-bar" style={{ height: h + 'px', background: el.color }} />
+                </div>
+              )
+            })}
+        </div>
+        <div className="sortviz-axis" style={{ width: n * SLOT + 'px' }}>
+          {Array.from({ length: n }).map((_, i) => (
+            <div key={i} className="sortviz-axis-cell" style={{ width: SLOT + 'px' }}>{i}</div>
+          ))}
+        </div>
       </div>
 
       {frame.countArr && (
