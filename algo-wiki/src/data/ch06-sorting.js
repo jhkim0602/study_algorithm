@@ -335,6 +335,15 @@ export const ch06 = {
         'print(arr)',
       options: ['i, j', 'min_idx, min_idx', 'j, i', 'i+1, min_idx'],
       answer: 2,
+      runCode:
+        'arr = [3, 1, 4, 2]\n' +
+        'for i in range(len(arr)-1):\n' +
+        '    min_idx = i\n' +
+        '    for j in range(i+1, len(arr)):\n' +
+        '        if arr[j] < arr[min_idx]:\n' +
+        '            min_idx = j\n' +
+        '    arr[i], arr[min_idx] = arr[min_idx], arr[i]\n\n' +
+        'print(arr)',
       explanation: '선택 정렬의 교환은 현재 위치 i와 최솟값 위치 min_idx 사이에서 일어나므로 두 빈칸 모두 min_idx이다.',
       concepts: ['선택 정렬', '빈칸 추론'],
     },
@@ -406,6 +415,16 @@ export const ch06 = {
         'print(arr)',
       options: ['j', 'j+1', 'i', 'i+1'],
       answer: 2,
+      runCode:
+        'arr = [3, 1, 2]\n' +
+        'for i in range(1, len(arr)):\n' +
+        '    key = arr[i]\n' +
+        '    j = i - 1\n\n' +
+        '    while j >= 0 and arr[j] > key:\n' +
+        '        arr[j+1] = arr[j]\n' +
+        '        j -= 1\n\n' +
+        '    arr[j+1] = key\n' +
+        'print(arr)',
       explanation: 'while이 끝난 뒤 j는 key보다 작거나 같은 값의 위치이므로 key는 arr[j+1]에 들어간다.',
       concepts: ['삽입 정렬', '빈칸 추론'],
     },
@@ -478,6 +497,15 @@ export const ch06 = {
         'print(quick_sort([3, 1, 2]))',
       options: ['arr', 'left', 'pivot', 'right'],
       answer: 3,
+      runCode:
+        'def quick_sort(arr):\n' +
+        '    if len(arr) <= 1:\n' +
+        '        return arr\n\n' +
+        '    pivot = arr[0]\n' +
+        '    left = [x for x in arr[1:] if x < pivot]\n' +
+        '    right = [x for x in arr[1:] if x >= pivot]\n\n' +
+        '    return quick_sort(left) + [pivot] + quick_sort(right)\n' +
+        'print(quick_sort([3, 1, 2]))',
       explanation: '퀵 정렬은 quick_sort(left) + [pivot] + quick_sort(right) 형태로 pivot을 가운데에 둔다.',
       concepts: ['퀵 정렬', '빈칸 추론'],
     },

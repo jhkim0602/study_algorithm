@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import CodeBlock from './CodeBlock.jsx'
 import MiniTree from './MiniTree.jsx'
 import ProblemDetail from './ProblemDetail.jsx'
+import CodeStepper from './viz/CodeStepper.jsx'
 import { TYPE_LABEL } from '../data/index.js'
 
 const OPT_NUM = ['①', '②', '③', '④']
@@ -16,6 +18,7 @@ export default function ProblemCard({
   const { no, type, prompt, code, figure, tree, options, answer, explanation, concepts, detail } = problem
   const isChoice = type === 'choice' || type === 'code'
 
+  const [runOpen, setRunOpen] = useState(false)
   const answered = selected != null && selected !== undefined
   const show = revealed || answered // 정답/해설 노출 여부
   const isCorrect = answered && selected === answer
@@ -48,6 +51,17 @@ export default function ProblemCard({
         </div>
       )}
       {code && <CodeBlock code={code} lang="python" />}
+
+      {type === 'code' && (
+        <div className="run-toggle">
+          <button className="reveal-btn run-btn" onClick={() => setRunOpen((v) => !v)}>
+            {runOpen ? '코드 실행 닫기 ▲' : '▶ 코드 한 줄씩 실행해 보기'}
+          </button>
+          {runOpen && (
+            <CodeStepper code={problem.runCode || code} title={problem.topic} />
+          )}
+        </div>
+      )}
 
       {isChoice && (
         <ol className="options">

@@ -1,5 +1,8 @@
+import { useMemo, useState } from 'react'
 import { VIZ } from './viz/index.js'
 import CodeBlock from './CodeBlock.jsx'
+import CodeStepper from './viz/CodeStepper.jsx'
+import { pyTrace } from '../pytrace/pyTrace.js'
 
 // 개념(이론) 블록 렌더러. block.type 에 따라 적절한 요소로 변환한다.
 export default function ConceptSection({ concept }) {
@@ -19,6 +22,29 @@ export default function ConceptSection({ concept }) {
 // 블록 배열을 렌더링하는 재사용 컴포넌트 (개념 섹션 / 세부 주제 페이지 공용)
 export function Blocks({ blocks }) {
   return (blocks || []).map((b, i) => <Block key={i} block={b} />)
+}
+
+// 코드 블록 + (실행 가능하면) 한 줄씩 실행 토글
+function RunnableCode({ code, caption, lang }) {
+  const [open, setOpen] = useState(false)
+  const runnable = useMemo(() => {
+    if (/\bclass\b/.test(code)) return false
+    try { const r = pyTrace(code); return !r.error && r.steps.length > 2 } catch { return false }
+  }, [code])
+  return (
+    <>
+      {caption && <p className="code-caption" dangerouslySetInnerHTML={{ __html: caption }} />}
+      <CodeBlock code={code} lang={lang} />
+      {runnable && (
+        <div className="run-toggle">
+          <button className="reveal-btn run-btn" onClick={() => setOpen((v) => !v)}>
+            {open ? '코드 실행 닫기 ▲' : '▶ 코드 한 줄씩 실행해 보기'}
+          </button>
+          {open && <CodeStepper code={code} />}
+        </div>
+      )}
+    </>
+  )
 }
 
 function Block({ block }) {
@@ -58,12 +84,8 @@ function Block({ block }) {
         </div>
       )
     case 'code':
-      return (
-        <>
-          {block.caption && <p className="code-caption" dangerouslySetInnerHTML={{ __html: block.caption }} />}
-          <CodeBlock code={block.code} lang={block.lang || 'python'} />
-        </>
-      )
+      return <RunnableCode code={block.code} caption={block.caption} lang={block.lang || 'python'} />
+
     case 'viz': {
       const Comp = VIZ[block.component]
       return Comp ? <Comp {...(block.props || {})} /> : null

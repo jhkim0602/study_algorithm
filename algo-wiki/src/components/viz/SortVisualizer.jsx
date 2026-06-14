@@ -77,8 +77,8 @@ export default function SortVisualizer({ algo: presetAlgo, lock = false }) {
             const y = H - 30 - barH
             return (
               <g key={i}>
-                <rect x={x} y={y} width={barW} height={barH} rx="4" fill={colorOf(i)} />
-                <text x={x + barW / 2} y={y - 7} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{v}</text>
+                <rect className="sortbar" x={x} y={y} width={barW} height={barH} rx="4" fill={colorOf(i)} />
+                <text className="sortbar-top" x={x + barW / 2} y={y - 7} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)">{v}</text>
                 <text x={x + barW / 2} y={H - 11} textAnchor="middle" fontSize="11" fill="var(--text-faint)">{i}</text>
               </g>
             )

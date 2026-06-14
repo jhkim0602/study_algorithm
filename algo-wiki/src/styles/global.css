@@ -43,14 +43,16 @@
   --viz-swap: #e5484d;
   --viz-sorted: #2fa84f;
   --viz-pivot: #8b5cf6;
-  /* 코드 하이라이팅 토큰 */
-  --hl-keyword: #cf222e;
+  /* 코드 글자색 (진한 검정 계열) */
+  --code-text: #111418;
+  /* 코드 하이라이팅 토큰 (라이트: 모두 진하게) */
+  --hl-keyword: #9a1024;
   --hl-string: #0a3069;
-  --hl-number: #0550ae;
-  --hl-comment: #6e7781;
-  --hl-builtin: #8250df;
-  --hl-function: #6639ba;
-  --hl-title: #953800;
+  --hl-number: #0a3a86;
+  --hl-comment: #5a6570;
+  --hl-builtin: #5b2bb0;
+  --hl-function: #4a2399;
+  --hl-title: #6e2a00;
 }
 
 /* ── 다크 테마 ── */
@@ -81,6 +83,7 @@
   --viz-swap: #ff6b6b;
   --viz-sorted: #4ac26b;
   --viz-pivot: #a78bfa;
+  --code-text: #e9eef4;
   --hl-keyword: #ff7b72;
   --hl-string: #a5d6ff;
   --hl-number: #79c0ff;
@@ -257,7 +260,7 @@ a:hover { text-decoration: underline; }
 .content ul { margin: 10px 0; padding-left: 22px; }
 .content li { margin: 5px 0; }
 .content code {
-  font-family: var(--font-mono); font-size: 0.88em;
+  font-family: var(--font-mono); font-size: 0.88em; color: var(--code-text);
   background: var(--bg-inline-code); padding: 1.5px 5px; border-radius: 4px;
 }
 
@@ -373,6 +376,13 @@ a:hover { text-decoration: underline; }
 .ox-chip.wrong { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
 .ox-chip:disabled { opacity: 1; }
 
+/* 코드 실행 토글 */
+.run-toggle { margin-top: 6px; }
+.run-btn { background: #6e40c918; color: #8b5cf6; }
+:root[data-theme="dark"] .run-btn { background: #8b5cf625; color: #c4b5fd; }
+.run-btn:hover { filter: brightness(0.97); }
+.run-toggle .codestepper { margin-top: 10px; }
+
 /* 정답·해설 토글 */
 .reveal { margin-top: 12px; }
 .reveal-btn {
@@ -464,7 +474,7 @@ a:hover { text-decoration: underline; }
 .codeblock pre { margin: 0; padding: 14px 16px; overflow-x: auto; }
 .codeblock code {
   font-family: var(--font-mono); font-size: 13px; line-height: 1.65;
-  background: none; padding: 0;
+  background: none; padding: 0; color: var(--code-text);
 }
 
 /* ============================================================
@@ -499,6 +509,20 @@ a:hover { text-decoration: underline; }
 .viz-btn.primary:hover:not(:disabled) { filter: brightness(1.06); color: #fff; }
 .viz-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .viz-stage { width: 100%; overflow-x: auto; }
+/* 막대 부드러운 전환(애니메이션) */
+.sortbar { transition: y 0.32s ease, height 0.32s ease, fill 0.18s ease; }
+.sortbar-top { transition: y 0.32s ease; }
+.cs-bar { transition: height 0.28s ease, background 0.18s ease; }
+
+/* 정렬 레이스 */
+.race-track { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.race-row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+.race-row.done { border-color: var(--viz-sorted); background: var(--ok-soft); }
+.race-label { font-size: 13px; line-height: 1.35; }
+.race-label b { display: block; }
+.race-meta { font-size: 11px; color: var(--text-faint); }
+.race-bars { display: flex; align-items: flex-end; gap: 2px; height: 60px; }
+.race-bar { flex: 1; min-width: 4px; border-radius: 2px 2px 0 0; transition: height 0.18s ease, background 0.15s ease; }
 .viz-note {
   font-size: 13px; color: var(--text-soft); margin-top: 10px; min-height: 20px;
   background: var(--bg-code); border-radius: var(--radius-sm); padding: 8px 12px;
@@ -508,6 +532,59 @@ a:hover { text-decoration: underline; }
 .viz-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .viz-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 .viz-step-info { font-size: 12px; color: var(--text-faint); font-weight: 600; margin-left: auto; }
+
+/* ── 코드 실행 추적기 (CodeStepper) ── */
+.codestepper .viz-tag { background: #6e40c920; color: #8b5cf6; }
+.cs-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 6px; }
+@media (max-width: 760px) { .cs-body { grid-template-columns: 1fr; } }
+.cs-panel-label { font-size: 11px; font-weight: 800; color: var(--text-faint); letter-spacing: 0.4px; margin-bottom: 6px; text-transform: uppercase; }
+.cs-left, .cs-right { min-width: 0; }
+.cs-frame { font-size: 12.5px; color: var(--accent-text); background: var(--accent-soft); border-radius: 6px; padding: 5px 10px; margin-bottom: 10px; }
+.cs-empty { font-size: 13px; color: var(--text-faint); padding: 10px 0; }
+
+.cs-array { margin-bottom: 12px; }
+.cs-array-name { font-size: 12px; color: var(--text-soft); margin-bottom: 4px; }
+.cs-array-name code { background: var(--bg-inline-code); padding: 1px 6px; border-radius: 4px; font-weight: 700; }
+.cs-cells { display: flex; flex-wrap: wrap; gap: 5px; align-items: flex-end; }
+.cs-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  min-width: 38px; border: 1px solid var(--border-strong); border-radius: 6px;
+  background: var(--bg); padding: 4px 6px 3px;
+}
+.cs-cell.empty { color: var(--text-faint); font-size: 12px; padding: 8px 12px; }
+.cs-cell.touched { border-color: var(--viz-compare); background: color-mix(in srgb, var(--viz-compare) 18%, transparent); }
+.cs-bar { width: 14px; background: var(--viz-bar); border-radius: 3px 3px 0 0; margin-bottom: 3px; }
+.cs-cell.touched .cs-bar { background: var(--viz-compare); }
+.cs-cell-val { font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.cs-cell-idx { font-size: 10px; color: var(--text-faint); }
+
+.cs-vars { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.cs-var { display: inline-flex; align-items: baseline; gap: 6px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-code); padding: 3px 9px; }
+.cs-var-name { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent-text); }
+.cs-var-val { font-family: var(--font-mono); font-size: 12.5px; color: var(--text); }
+
+.cs-stdout { margin-top: 12px; }
+.cs-stdout pre {
+  margin: 0; font-family: var(--font-mono); font-size: 12.5px; color: var(--text);
+  background: var(--bg-code); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 10px; min-height: 28px; white-space: pre-wrap; overflow-x: auto;
+}
+.cs-error { margin-top: 8px; font-size: 12.5px; color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); border-radius: 6px; padding: 6px 10px; }
+
+.cs-code {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-code); overflow-x: auto; font-family: var(--font-mono);
+}
+.cs-line { display: flex; align-items: stretch; font-size: 13px; line-height: 1.65; }
+.cs-line.active { background: color-mix(in srgb, var(--viz-compare) 22%, transparent); }
+.cs-gutter {
+  flex-shrink: 0; width: 34px; text-align: right; padding: 0 8px;
+  color: var(--text-faint); font-size: 11.5px; user-select: none;
+  border-right: 1px solid var(--border);
+}
+.cs-line.active .cs-gutter { color: var(--text); font-weight: 800; border-right-color: var(--viz-compare); }
+.cs-src { padding: 0 12px; white-space: pre; color: var(--code-text); }
+.cs-line.active .cs-src { font-weight: 600; }
 
 /* ============================================================
    통합 문제 (필터 패널)
@@ -580,7 +657,7 @@ a:hover { text-decoration: underline; }
 /* ============================================================
    highlight.js 토큰 (테마 변수 기반)
    ============================================================ */
-.hljs { color: var(--text); background: transparent; }
+.hljs { color: var(--code-text); background: transparent; }
 .hljs-keyword, .hljs-meta .hljs-keyword { color: var(--hl-keyword); font-weight: 600; }
 .hljs-string, .hljs-meta-string { color: var(--hl-string); }
 .hljs-number, .hljs-literal { color: var(--hl-number); }
@@ -588,6 +665,6 @@ a:hover { text-decoration: underline; }
 .hljs-built_in, .hljs-type { color: var(--hl-builtin); }
 .hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--hl-title); font-weight: 600; }
 .hljs-function .hljs-title { color: var(--hl-function); }
-.hljs-params { color: var(--text); }
+.hljs-params { color: var(--code-text); }
 .hljs-attr, .hljs-property { color: var(--hl-number); }
-.hljs-operator, .hljs-punctuation { color: var(--text-soft); }
+.hljs-operator, .hljs-punctuation { color: var(--code-text); }

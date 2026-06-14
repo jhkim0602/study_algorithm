@@ -12,6 +12,8 @@ import CursorListViz from './CursorListViz.jsx'
 import HeapArrayViz from './HeapArrayViz.jsx'
 import TraversalCompareViz from './TraversalCompareViz.jsx'
 import BSTShapeViz from './BSTShapeViz.jsx'
+import CodeStepper from './CodeStepper.jsx'
+import SortRace from './SortRace.jsx'
 
 // 개념 데이터의 { type: 'viz', component: '...' } 를 실제 컴포넌트로 매핑
 export const VIZ = {
@@ -28,4 +30,6 @@ export const VIZ = {
   HeapArrayViz,
   TraversalCompareViz,
   BSTShapeViz,
+  CodeStepper,
+  SortRace,
 }
