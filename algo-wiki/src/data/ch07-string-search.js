@@ -1,0 +1,173 @@
+// Ch07 문자열 검색 — 개념 + 문제 40 (객관식 1~20 + O/X 21~40)
+// 원본: Ch07_Ch08_Ch09_문제만_문서형.pdf / Ch07_Ch08_Ch09_정답표_해설.pdf
+
+export const ch07 = {
+  id: 'ch07',
+  slug: 'string-search',
+  title: 'Ch07 문자열 검색',
+  subtitle: '브루트 포스 · KMP · 보이어-무어',
+  concept: {
+    summary:
+      '문자열 검색(string searching)은 긴 문자열인 텍스트(text) 안에서 찾고자 하는 짧은 문자열인 ' +
+      '패턴(pattern)이 나타나는 위치를 찾는 문제다. 대표 알고리즘은 브루트 포스, KMP, 보이어-무어이며, ' +
+      '핵심 차이는 "불일치가 났을 때 패턴을 얼마나 똑똑하게 이동시키는가"이다.',
+    blocks: [
+      { type: 'h3', text: '용어 정리' },
+      {
+        type: 'list',
+        items: [
+          '<b>텍스트(text)</b> — 검색의 대상이 되는 전체 문자열 (길이 n).',
+          '<b>패턴(pattern)</b> — 찾고자 하는 문자열 (길이 m).',
+          '검색의 목표는 텍스트 안에 패턴이 등장하는 위치(또는 존재 여부)를 알아내는 것이다.',
+        ],
+      },
+      { type: 'h3', text: '세 알고리즘 비교' },
+      {
+        type: 'table',
+        headers: ['알고리즘', '비교 시작', '불일치 시 이동', '시간복잡도', '특징'],
+        rows: [
+          ['브루트 포스', '패턴 앞에서부터', '한 칸씩', 'O(nm)', '가장 단순, 비교 결과를 버림'],
+          ['KMP', '패턴 앞에서부터', 'skip table 만큼', 'O(n+m)', '이미 비교한 정보를 재사용'],
+          ['보이어-무어', '패턴 뒤에서부터', '여러 칸 점프', 'O(nm)~O(n/m)', '실제로 가장 빠른 편'],
+        ],
+      },
+      { type: 'h4', text: '브루트 포스법 (Brute Force)' },
+      {
+        type: 'p',
+        html:
+          '가능한 모든 시작 위치에 패턴을 맞춰 보고 앞에서부터 한 글자씩 비교한다. 불일치가 나면 패턴을 ' +
+          '오른쪽으로 <b>딱 한 칸</b> 옮겨 처음부터 다시 비교한다. 구현이 매우 단순하지만, 이미 일치했던 ' +
+          '비교 정보를 전혀 활용하지 않아 같은 비교를 반복하므로 최악에 <code>O(nm)</code>이다.',
+      },
+      { type: 'h4', text: 'KMP법 (Knuth–Morris–Pratt)' },
+      {
+        type: 'p',
+        html:
+          'KMP는 패턴 내부의 <b>접두사(prefix)와 접미사(suffix)가 겹치는 정보</b>를 미리 계산해 ' +
+          '<code>skip table</code>(실패 함수)을 만든다. 불일치가 나도 이미 일치했던 부분만큼은 다시 비교하지 ' +
+          '않고 패턴을 건너뛴다. 덕분에 텍스트 포인터는 뒤로 돌아가지 않으며 전체를 <code>O(n+m)</code> 선형 ' +
+          '시간에 검색한다.',
+      },
+      { type: 'h4', text: '보이어-무어법 (Boyer–Moore)' },
+      {
+        type: 'p',
+        html:
+          '패턴을 <b>뒤(끝 문자)에서부터</b> 비교하는 점이 독특하다. 불일치한 텍스트 문자가 패턴에 아예 없으면 ' +
+          '패턴 길이만큼 한 번에 건너뛸 수 있어 평균적으로 텍스트의 많은 글자를 아예 보지 않고 지나간다. ' +
+          '그래서 실제 검색에서 가장 빠른 편에 속한다.',
+      },
+      {
+        type: 'callout',
+        tone: 'tip',
+        html:
+          '아래 시각화에서 텍스트와 패턴을 직접 입력하고 <b>브루트 포스 / KMP</b>를 단계 실행해 보세요. ' +
+          '포인터 이동과 일치(초록)·불일치(빨강), KMP의 skip table 동작을 눈으로 확인할 수 있습니다.',
+      },
+      { type: 'viz', component: 'StringSearchVisualizer' },
+    ],
+  },
+  problems: [
+    // ── 객관식 ──
+    { no: 1, type: 'choice', prompt: '문자열 검색의 설명으로 가장 옳은 것은?',
+      options: ['숫자 데이터를 정렬하는 과정', '문자열 안에서 특정 패턴을 찾는 과정', '트리 구조를 생성하는 과정', '연결 리스트를 탐색하는 과정'],
+      answer: 2, explanation: '문자열 검색은 텍스트 안에서 원하는 패턴 문자열을 찾는 과정이다.', concepts: ['문자열 검색 기초'] },
+    { no: 2, type: 'choice', prompt: '문자열 검색에서 검색되는 대상 문자열은?',
+      options: ['패턴', '키', '텍스트', '노드'],
+      answer: 3, explanation: '검색되는 전체 대상 문자열을 텍스트라고 한다.', concepts: ['텍스트와 패턴'] },
+    { no: 3, type: 'choice', prompt: '문자열 검색에서 찾으려는 문자열은?',
+      options: ['패턴', '텍스트', '루트', '인덱스'],
+      answer: 1, explanation: '찾고자 하는 문자열을 패턴이라고 한다.', concepts: ['텍스트와 패턴'] },
+    { no: 4, type: 'choice', prompt: '브루트 포스법의 특징으로 가장 적절한 것은?',
+      options: ['해시 기반 검색', '가장 단순한 문자열 검색 방법', '트리 기반 검색', '정렬이 반드시 필요'],
+      answer: 2, explanation: '브루트 포스법은 가능한 위치를 하나씩 대조하는 가장 단순한 검색법이다.', concepts: ['브루트 포스법'] },
+    { no: 5, type: 'choice', prompt: '브루트 포스법에서 불일치가 발생 시 처리방법은?',
+      options: ['패턴을 여러 칸 건너뜀', '패턴을 한 칸 오른쪽으로 이동', '텍스트를 역순으로 비교', '탐색 종료'],
+      answer: 2, explanation: '불일치하면 패턴을 오른쪽으로 한 칸 이동해 다시 비교한다.', concepts: ['브루트 포스법'] },
+    { no: 6, type: 'choice', prompt: '브루트 포스법의 시간복잡도로 가장 적절한 것은?',
+      options: ['O(1)', 'O(log n)', 'O(n)', 'O(nm)'],
+      answer: 4, explanation: '텍스트 길이 n, 패턴 길이 m일 때 최악에는 O(nm) 비교가 발생한다.', concepts: ['브루트 포스법', '시간복잡도'] },
+    { no: 7, type: 'choice', prompt: '브루트 포스법이 비효율적인 이유는?',
+      options: ['재귀 사용', '비교 결과를 활용하지 않음', '트리 구조 필요', '추가 배열 사용'],
+      answer: 2, explanation: '이전 비교 결과를 활용하지 않아 같은 비교가 반복될 수 있다.', concepts: ['브루트 포스법'] },
+    { no: 8, type: 'choice', prompt: 'KMP법의 핵심 아이디어는?',
+      options: ['힙 사용', '비교 결과 재활용', '무작위 탐색', '트리 균형 유지'],
+      answer: 2, explanation: 'KMP는 이미 얻은 일치 정보를 이용해 비교 위치를 효율적으로 이동한다.', concepts: ['KMP법'] },
+    { no: 9, type: 'choice', prompt: 'KMP법에서 사용하는 표는?',
+      options: ['힙 배열', '해시 테이블', 'skip table', 'adjacency matrix'],
+      answer: 3, explanation: 'KMP는 실패 함수 또는 skip table을 이용한다.', concepts: ['KMP법', 'skip table'] },
+    { no: 10, type: 'choice', prompt: 'KMP법이 장점으로 가장 적절한 것은?',
+      options: ['구현이 가장 단순함', '비교를 반복하지 않음', '이미 비교한 정보를 활용함', '항상 O(1) 보장'],
+      answer: 3, explanation: 'KMP는 이미 비교한 정보를 활용해 불필요한 반복 비교를 줄인다.', concepts: ['KMP법'] },
+    { no: 11, type: 'choice', prompt: 'KMP법에서 불일치가 발생하면 활용하는 것은?',
+      options: ['압축', 'skip table', '큐 구조', '재귀 호출'],
+      answer: 2, explanation: '불일치 시 skip table을 참고해 패턴의 이동 위치를 정한다.', concepts: ['KMP법', 'skip table'] },
+    { no: 12, type: 'choice', prompt: 'KMP에서 패턴의 일부가 이미 일치했다면?',
+      options: ['처음부터 다시 비교', '일치 정보를 활용하여 건너뜀', '탐색 종료', '정렬 수행'],
+      answer: 2, explanation: '이미 맞은 접두사/접미사 정보를 활용해 처음부터 다시 비교하지 않는다.', concepts: ['KMP법'] },
+    { no: 13, type: 'choice', prompt: 'KMP법의 시간복잡도는?',
+      options: ['O(1)', 'O(log n)', 'O(n + m)', 'O(n²)'],
+      answer: 3, explanation: 'KMP는 텍스트와 패턴을 합쳐 선형 시간 O(n + m)에 처리할 수 있다.', concepts: ['KMP법', '시간복잡도'] },
+    { no: 14, type: 'choice', prompt: 'KMP법에서 skip table을 만드는 목적은?',
+      options: ['메모리 절약', '중복 비교 제거', '트리 생성', '데이터 정렬'],
+      answer: 2, explanation: 'skip table은 중복 비교를 줄이기 위해 만든다.', concepts: ['KMP법', 'skip table'] },
+    { no: 15, type: 'choice', prompt: '보이어-무어법의 특징으로 옳은 것은?',
+      options: ['패턴의 앞 문자부터 비교', '패턴의 끝 문자부터 비교', '항상 한 칸씩 이동', '재귀 기반 탐색'],
+      answer: 2, explanation: '보이어-무어법은 보통 패턴의 뒤쪽 문자부터 비교한다.', concepts: ['보이어-무어법'] },
+    { no: 16, type: 'choice', prompt: '보이어-무어법이 빠른 이유는?',
+      options: ['비교 없이 탐색', '여러 칸 건너뛰기 가능', '항상 정렬 수행', '재귀 깊이 감소'],
+      answer: 2, explanation: '불일치 정보에 따라 여러 칸을 건너뛸 수 있어 빠르다.', concepts: ['보이어-무어법'] },
+    { no: 17, type: 'choice', prompt: '다음 중 문자열 검색 알고리즘이 아닌 것은?',
+      options: ['브루트 포스법', 'KMP법', '보이어-무어법', '병합 정렬'],
+      answer: 4, explanation: '병합 정렬은 정렬 알고리즘이지 문자열 검색 알고리즘이 아니다.', concepts: ['문자열 검색 기초'] },
+    { no: 18, type: 'choice', prompt: 'KMP법에서 패턴 내부의 겹치는 문자열 정보를 사용하는 이유는?',
+      options: ['메모리 절약', '비교 위치를 효율적으로 이동', '정렬 수행', '트리 구성'],
+      answer: 2, explanation: '겹침 정보를 이용하면 다음 비교 위치를 효율적으로 정할 수 있다.', concepts: ['KMP법'] },
+    { no: 19, type: 'choice', prompt: '보이어-무어법은 일반적으로 어떤 특징이 있는가?',
+      options: ['실제 수행 속도가 빠름', '항상 구현이 가장 간단함', '추가 메모리를 사용하지 않음', '트리 구조 필요'],
+      answer: 1, explanation: '보이어-무어법은 실제 문자열 검색에서 평균적으로 빠른 편이다.', concepts: ['보이어-무어법'] },
+    { no: 20, type: 'choice', prompt: '브루트 포스법과 비교했을 때 KMP법의 차이점은?',
+      options: ['문자열 정렬 수행', '비교 결과를 재사용', '배열 대신 트리 사용', '항상 재귀 호출 사용'],
+      answer: 2, explanation: 'KMP는 비교 결과를 재사용한다는 점이 브루트 포스와 다르다.', concepts: ['KMP법', '브루트 포스법'] },
+    // ── O/X ──
+    { no: 21, type: 'ox', prompt: '문자열 검색은 문자열 안에서 특정 패턴을 찾는 과정이다.',
+      answer: 'O', explanation: '문자열 검색의 정의가 맞다.', concepts: ['문자열 검색 기초'] },
+    { no: 22, type: 'ox', prompt: '문자열 검색에서 찾으려는 문자열을 텍스트(text)라고 한다.',
+      answer: 'X', explanation: '찾으려는 문자열은 텍스트가 아니라 패턴이다.', concepts: ['텍스트와 패턴'] },
+    { no: 23, type: 'ox', prompt: '브루트 포스법은 문자열 검색 알고리즘 중 가장 단순한 방법이다.',
+      answer: 'O', explanation: '브루트 포스는 단순 대조 방식이다.', concepts: ['브루트 포스법'] },
+    { no: 24, type: 'ox', prompt: '브루트 포스법은 불일치가 발생하면 패턴을 한 칸 이동하여 다시 비교한다.',
+      answer: 'O', explanation: '불일치 시 패턴을 한 칸씩 이동해 다시 검사한다.', concepts: ['브루트 포스법'] },
+    { no: 25, type: 'ox', prompt: '브루트 포스법은 이미 비교한 결과를 적극적으로 재사용한다.',
+      answer: 'X', explanation: '브루트 포스는 비교 결과 재사용이 핵심이 아니다.', concepts: ['브루트 포스법'] },
+    { no: 26, type: 'ox', prompt: '브루트 포스법의 최악 시간복잡도는 O(nm)이다.',
+      answer: 'O', explanation: '최악에는 각 위치마다 패턴 길이만큼 비교할 수 있다.', concepts: ['브루트 포스법', '시간복잡도'] },
+    { no: 27, type: 'ox', prompt: 'KMP법은 패턴 내부의 일치 정보를 활용한다.',
+      answer: 'O', explanation: 'KMP는 패턴 내부의 접두사/접미사 일치 정보를 사용한다.', concepts: ['KMP법'] },
+    { no: 28, type: 'ox', prompt: 'KMP법은 불일치가 발생하면 항상 처음부터 다시 비교한다.',
+      answer: 'X', explanation: 'KMP는 skip table로 비교 위치를 이동하므로 항상 처음부터 비교하지 않는다.', concepts: ['KMP법'] },
+    { no: 29, type: 'ox', prompt: 'KMP법은 skip table을 사용한다.',
+      answer: 'O', explanation: 'KMP는 skip table 또는 실패 함수를 사용한다.', concepts: ['KMP법', 'skip table'] },
+    { no: 30, type: 'ox', prompt: 'KMP법의 시간복잡도는 일반적으로 O(n + m)이다.',
+      answer: 'O', explanation: 'KMP의 일반적인 시간복잡도는 O(n + m)이다.', concepts: ['KMP법', '시간복잡도'] },
+    { no: 31, type: 'ox', prompt: 'KMP법은 브루트 포스법보다 불필요한 비교를 줄일 수 있다.',
+      answer: 'O', explanation: 'KMP는 불필요한 비교를 줄이는 알고리즘이다.', concepts: ['KMP법'] },
+    { no: 32, type: 'ox', prompt: '보이어-무어법은 패턴의 앞 문자부터 비교를 시작한다.',
+      answer: 'X', explanation: '보이어-무어법은 보통 패턴의 끝 문자부터 비교한다.', concepts: ['보이어-무어법'] },
+    { no: 33, type: 'ox', prompt: '보이어-무어법은 일반적으로 실제 수행 속도가 빠른 편이다.',
+      answer: 'O', explanation: '건너뛰기 규칙 덕분에 실제 수행 속도가 빠른 편이다.', concepts: ['보이어-무어법'] },
+    { no: 34, type: 'ox', prompt: '보이어-무어법은 여러 문자를 한 번에 건너뛸 수 있다.',
+      answer: 'O', explanation: '불일치 위치에 따라 여러 문자를 건너뛸 수 있다.', concepts: ['보이어-무어법'] },
+    { no: 35, type: 'ox', prompt: '문자열 검색 알고리즘은 항상 정렬 과정이 필요하다.',
+      answer: 'X', explanation: '문자열 검색은 정렬 없이도 수행할 수 있다.', concepts: ['문자열 검색 기초'] },
+    { no: 36, type: 'ox', prompt: '이진 검색은 문자열 검색 알고리즘의 대표적인 예이다.',
+      answer: 'X', explanation: '이진 검색은 정렬된 데이터에서 값을 찾는 탐색법이다.', concepts: ['문자열 검색 기초'] },
+    { no: 37, type: 'ox', prompt: 'KMP법은 이미 비교한 문자열 정보를 재활용한다.',
+      answer: 'O', explanation: 'KMP는 이미 비교한 문자열 정보를 재활용한다.', concepts: ['KMP법'] },
+    { no: 38, type: 'ox', prompt: '보이어-무어법은 불일치 발생 시 큰 폭으로 이동할 수 있다.',
+      answer: 'O', explanation: '보이어-무어법은 불일치 발생 시 큰 폭 이동이 가능하다.', concepts: ['보이어-무어법'] },
+    { no: 39, type: 'ox', prompt: '브루트 포스법은 구현이 단순하다는 장점이 있다.',
+      answer: 'O', explanation: '브루트 포스법은 구현이 쉽고 단순하다.', concepts: ['브루트 포스법'] },
+    { no: 40, type: 'ox', prompt: '문자열 검색 알고리즘은 텍스트 안에서 원하는 패턴의 존재 여부를 검사할 수 있다.',
+      answer: 'O', explanation: '텍스트 안에 패턴이 있는지 검사하는 것이 문자열 검색이다.', concepts: ['문자열 검색 기초'] },
+  ],
+}
