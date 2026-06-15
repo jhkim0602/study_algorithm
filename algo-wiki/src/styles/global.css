@@ -342,14 +342,20 @@ a:hover { text-decoration: underline; }
 .option.correct .opt-num { color: var(--ok); }
 .option.wrong { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); }
 .option.wrong .opt-num { color: var(--danger); }
+.option.chosen { border-color: var(--accent); background: var(--accent-soft); }
+.option.chosen .opt-num { color: var(--accent-text); }
 .option .opt-check { margin-left: auto; color: var(--ok); font-weight: 800; }
 .option .opt-mine { margin-left: auto; color: var(--danger); font-weight: 800; }
+.option .opt-mine.chosen { color: var(--accent-text); }
 .option .opt-check + .opt-mine { margin-left: 8px; }
 
 /* 풀이 상태 배지 / 피드백 */
 .solve-tag { font-size: 11px; font-weight: 800; border-radius: 5px; padding: 2px 8px; }
 .solve-tag.ok { background: var(--ok); color: #fff; }
 .solve-tag.no { background: var(--danger); color: #fff; }
+.solve-tag.chosen { background: var(--accent-soft); color: var(--accent-text); }
+.ans-result.ok { color: var(--ok); font-weight: 800; }
+.ans-result.no { color: var(--danger); font-weight: 800; }
 .solve-feedback {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   margin-top: 12px; padding: 9px 14px; border-radius: var(--radius-sm);
@@ -374,6 +380,7 @@ a:hover { text-decoration: underline; }
 .ox-chip.clickable:hover { border-color: var(--accent); color: var(--accent-text); }
 .ox-chip.correct { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); }
 .ox-chip.wrong { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+.ox-chip.chosen { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-text); }
 .ox-chip:disabled { opacity: 1; }
 
 /* 코드 실행 토글 */
@@ -637,6 +644,33 @@ a:hover { text-decoration: underline; }
   display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding-top: 10px;
   border-top: 1px solid var(--border); max-height: 220px; overflow-y: auto;
 }
+
+/* ============================================================
+   학습 기록 (진도·모의고사·오답노트)
+   ============================================================ */
+.progress-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); padding: 16px 18px; box-shadow: var(--shadow); margin: 12px 0; }
+.progress-bar { height: 12px; border-radius: 8px; background: var(--bg-code); overflow: hidden; border: 1px solid var(--border); }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); transition: width 0.4s ease; }
+.progress-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 12px; font-size: 14px; color: var(--text-soft); }
+.progress-meta b { color: var(--text); }
+.progress-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+.exam-result {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 18px;
+  border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-elev);
+  padding: 16px 20px; box-shadow: var(--shadow); margin: 8px 0 18px;
+}
+.er-score { font-size: 34px; font-weight: 800; color: var(--accent-text); }
+.er-score span { font-size: 18px; color: var(--text-faint); font-weight: 700; }
+.er-acc { font-size: 18px; font-weight: 700; }
+.er-wrong { font-size: 13.5px; color: var(--danger); }
+
+.exam-history { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elev); overflow: hidden; }
+.exam-hist-row { display: flex; align-items: center; gap: 12px; padding: 9px 14px; font-size: 13.5px; border-top: 1px solid var(--border); }
+.exam-hist-row:first-child { border-top: none; }
+.eh-date { color: var(--text-faint); width: 110px; flex-shrink: 0; }
+.eh-scope { color: var(--text-soft); flex: 1; }
+.eh-score { font-weight: 600; }
 
 /* ============================================================
    홈 (개요)

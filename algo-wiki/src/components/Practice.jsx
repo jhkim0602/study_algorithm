@@ -1,8 +1,15 @@
 import { useMemo, useState } from 'react'
 import { chapters, allProblems, allConcepts, TYPE_LABEL } from '../data/index.js'
+import { problemStatus } from '../utils/progress.js'
 import ProblemCard from './ProblemCard.jsx'
 
 const TYPES = ['choice', 'code', 'ox']
+const STATUSES = [
+  { key: 'all', label: '전체' },
+  { key: 'unanswered', label: '안 푼 것' },
+  { key: 'correct', label: '맞은 것' },
+  { key: 'wrong', label: '틀린 것' },
+]
 
 // 결정적이지 않아도 되는 UI용 셔플 (Fisher–Yates)
 function shuffle(arr) {
@@ -26,10 +33,11 @@ function useToggleSet(initial = []) {
   return [set, toggle, clear, setSet]
 }
 
-export default function Practice({ isRevealed, toggle, setManyRevealed, getAnswer, selectAnswer, resetAnswer }) {
+export default function Practice({ answers, clearAnswers, isRevealed, toggle, setManyRevealed, getAnswer, selectAnswer, resetAnswer }) {
   const [chapSel, toggleChap] = useToggleSet(chapters.map((c) => c.id)) // 기본: 전체 챕터
   const [typeSel, toggleType] = useToggleSet(TYPES) // 기본: 전체 유형
   const [conceptSel, toggleConcept, clearConcepts] = useToggleSet([]) // 기본: 전체 개념
+  const [statusSel, setStatusSel] = useState('all') // 풀이상태 필터(복습용)
   const [shuffled, setShuffled] = useState(false)
   const [reshuffleKey, setReshuffleKey] = useState(0)
   const [showConcepts, setShowConcepts] = useState(false)
@@ -39,13 +47,14 @@ export default function Practice({ isRevealed, toggle, setManyRevealed, getAnswe
       (p) =>
         chapSel.has(p.chapterId) &&
         typeSel.has(p.type) &&
-        (conceptSel.size === 0 || (p.concepts || []).some((c) => conceptSel.has(c))),
+        (conceptSel.size === 0 || (p.concepts || []).some((c) => conceptSel.has(c))) &&
+        (statusSel === 'all' || problemStatus(p, answers[`${p.chapterId}-${p.no}`]) === statusSel),
     )
     if (shuffled) list = shuffle(list)
     return list
     // reshuffleKey를 의존성에 포함해 "다시 섞기"가 동작하게 한다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapSel, typeSel, conceptSel, shuffled, reshuffleKey])
+  }, [chapSel, typeSel, conceptSel, statusSel, answers, shuffled, reshuffleKey])
 
   const allRevealed = filtered.length > 0 && filtered.every((p) => isRevealed(p.chapterId, p.no))
   const pairs = filtered.map((p) => ({ chapterId: p.chapterId, no: p.no }))
@@ -96,6 +105,15 @@ export default function Practice({ isRevealed, toggle, setManyRevealed, getAnswe
         </div>
 
         <div className="filter-row">
+          <span className="filter-label">복습</span>
+          <div className="chip-group">
+            {STATUSES.map((s) => (
+              <button key={s.key} className={`fchip${statusSel === s.key ? ' on' : ''}`} onClick={() => setStatusSel(s.key)}>{s.label}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filter-row">
           <span className="filter-label">개념</span>
           <div className="chip-group">
             <button className="fchip ghost" onClick={() => setShowConcepts((v) => !v)}>
@@ -120,6 +138,7 @@ export default function Practice({ isRevealed, toggle, setManyRevealed, getAnswe
       <div className="problem-section-head">
         <h2 style={{ margin: 0, border: 'none', padding: 0 }}>결과 {filtered.length}문항</h2>
         <span className="spacer" />
+        <button className="btn" onClick={clearAnswers}>풀이 기록 초기화</button>
         <button className="btn" onClick={() => setManyRevealed(pairs, !allRevealed)} disabled={filtered.length === 0}>
           {allRevealed ? '전체 정답 접기' : '전체 정답 펼치기'}
         </button>

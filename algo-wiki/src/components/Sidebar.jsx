@@ -20,6 +20,12 @@ export default function Sidebar({ open, route, navigate, onClose }) {
         <button className={`sidebar-home${route === 'practice' ? ' active' : ''}`} onClick={() => go('practice')}>
           통합 문제 (Practice)
         </button>
+        <button className={`sidebar-home${route === 'exam' ? ' active' : ''}`} onClick={() => go('exam')}>
+          통합 모의고사
+        </button>
+        <button className={`sidebar-home${route === 'wrong' ? ' active' : ''}`} onClick={() => go('wrong')}>
+          오답노트
+        </button>
 
         {chapters.map((c) => {
           const [chSlug, subSlug] = route.split('/')

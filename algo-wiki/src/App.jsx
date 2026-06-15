@@ -6,11 +6,14 @@ import Home from './components/Home.jsx'
 import ChapterView from './components/ChapterView.jsx'
 import SubtopicView from './components/SubtopicView.jsx'
 import Practice from './components/Practice.jsx'
+import Exam from './components/Exam.jsx'
+import WrongNotes from './components/WrongNotes.jsx'
 
 export default function App() {
   const [theme, setTheme] = useLocalStorage('algowiki.theme', 'light')
   const [revealed, setRevealed] = useLocalStorage('algowiki.revealed', {})
   const [answers, setAnswers] = useLocalStorage('algowiki.answers', {})
+  const [examHistory, setExamHistory] = useLocalStorage('algowiki.examHistory', [])
   const [route, navigate] = useHashRoute()
   const [navOpen, setNavOpen] = useState(false)
 
@@ -65,11 +68,22 @@ export default function App() {
     })
   }, [setAnswers])
 
+  const clearAnswers = useCallback(() => {
+    if (window.confirm('풀이 기록(선택한 답안)을 모두 지울까요? 모의고사 기록은 유지됩니다.')) setAnswers({})
+  }, [setAnswers])
+
+  const addExamResult = useCallback((res) => {
+    setExamHistory((prev) => [...prev, res].slice(-50))
+  }, [setExamHistory])
+
   const isPractice = route === 'practice'
+  const isExam = route === 'exam'
+  const isWrong = route === 'wrong'
   const [chSlug, subSlug] = route.split('/')
   const chapter = chapterBySlug[chSlug]
   const subtopic = subSlug && chapter ? chapter.subtopics.find((s) => s.slug === subSlug) : null
-  const crumb = isPractice ? '통합 문제' : subtopic ? `${chapter.title} › ${subtopic.title}` : chapter ? chapter.title : '개요'
+  const crumb = isPractice ? '통합 문제' : isExam ? '통합 모의고사' : isWrong ? '오답노트'
+    : subtopic ? `${chapter.title} › ${subtopic.title}` : chapter ? chapter.title : '개요'
 
   return (
     <div className="app">
@@ -92,8 +106,20 @@ export default function App() {
         </header>
 
         <main>
-          {isPractice ? (
+          {isExam ? (
+            <Exam
+              getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
+              examHistory={examHistory} addExamResult={addExamResult}
+            />
+          ) : isWrong ? (
+            <WrongNotes
+              answers={answers} navigate={navigate}
+              isRevealed={isRevealed} toggle={toggle}
+              getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
+            />
+          ) : isPractice ? (
             <Practice
+              answers={answers} clearAnswers={clearAnswers}
               isRevealed={isRevealed} toggle={toggle} setManyRevealed={setManyRevealed}
               getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
             />
@@ -117,7 +143,7 @@ export default function App() {
               getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
             />
           ) : (
-            <Home navigate={navigate} />
+            <Home navigate={navigate} answers={answers} />
           )}
         </main>
       </div>
