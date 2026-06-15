@@ -375,6 +375,31 @@ export function pyRepr(x) {
 }
 function pyStr(x) { return typeof x === 'string' ? x : pyRepr(x) }
 
+// 표현식 AST → 사람이 읽기 좋은 소스 문자열 (설명용)
+function exprStr(e) {
+  if (!e) return ''
+  switch (e.type) {
+    case 'Num': return String(e.v)
+    case 'Str': return "'" + e.v + "'"
+    case 'Const': return e.v === true ? 'True' : e.v === false ? 'False' : 'None'
+    case 'Name': return e.v
+    case 'Index': return exprStr(e.obj) + '[' + exprStr(e.index) + ']'
+    case 'Slice': return exprStr(e.obj) + '[' + (e.lower ? exprStr(e.lower) : '') + ':' + (e.upper ? exprStr(e.upper) : '') + ']'
+    case 'Bin': return exprStr(e.l) + ' ' + e.op + ' ' + exprStr(e.r)
+    case 'Cmp': return exprStr(e.l) + ' ' + e.op + ' ' + exprStr(e.r)
+    case 'Bool': return exprStr(e.l) + ' ' + e.op + ' ' + exprStr(e.r)
+    case 'Not': return 'not ' + exprStr(e.e)
+    case 'Neg': return '-' + exprStr(e.e)
+    case 'Call': return exprStr(e.callee) + '(' + e.args.map(exprStr).join(', ') + ')'
+    case 'Attr': return exprStr(e.obj) + '.' + e.name
+    case 'List': return '[' + e.items.map(exprStr).join(', ') + ']'
+    case 'Tuple': case 'TupleTarget': return e.items.map(exprStr).join(', ')
+    case 'Dict': return '{...}'
+    case 'Comp': return '[' + exprStr(e.elt) + ' for ' + exprStr(e.target) + ' in ...]'
+    default: return '?'
+  }
+}
+
 // ── 인터프리터 ──
 class Break { }
 class Continue { }
@@ -398,15 +423,55 @@ export function pyTrace(code, opts = {}) {
     for (const k of Object.keys(scope)) { if (k.startsWith('__')) continue; vars[k] = deepCopy(scope[k]) }
     return vars
   }
-  function record(line, scope, depth, fnName) {
+  function record(line, scope, depth, fnName, note) {
     if (steps.length >= maxSteps) throw new Error('단계 수 초과(무한 루프?)')
     const tk = {}
     for (const k of Object.keys(touched)) tk[k] = [...touched[k]]
-    steps.push({ line, vars: snapshot(scope), touched: tk, stdout, depth, fn: fnName })
+    steps.push({ line, vars: snapshot(scope), touched: tk, stdout, depth, fn: fnName, note: note || '' })
   }
+  let suppressTouch = false
   function markTouch(name, idx) {
+    if (suppressTouch) return
     if (!touched[name]) touched[name] = new Set()
     if (idx != null && idx >= 0) touched[name].add(idx)
+  }
+
+  // 설명용: 접근 표시 없이 표현식 값을 구함
+  function quietEval(e, scope) {
+    suppressTouch = true
+    try { return evalExpr(e, scope) } catch { return undefined } finally { suppressTouch = false }
+  }
+  // 피연산자를 "식=값" 형태로 (리터럴은 그대로)
+  function operandStr(node, scope) {
+    if (!node) return ''
+    if (node.type === 'Num' || node.type === 'Str' || node.type === 'Const') return exprStr(node)
+    const v = quietEval(node, scope)
+    return v === undefined ? exprStr(node) : `${exprStr(node)}=${pyRepr(v)}`
+  }
+  // 조건식을 값과 함께 설명
+  function condStr(node, scope) {
+    if (!node) return ''
+    if (node.type === 'Cmp') return `${operandStr(node.l, scope)} ${node.op} ${operandStr(node.r, scope)}`
+    if (node.type === 'Bool') return `${condStr(node.l, scope)} ${node.op === 'and' ? '그리고' : '또는'} ${condStr(node.r, scope)}`
+    if (node.type === 'Not') return `not(${condStr(node.e, scope)})`
+    return operandStr(node, scope)
+  }
+  // 대입문 설명
+  function assignNote(st, val, scope) {
+    const t0 = st.targets[0]
+    if (st.targets.length === 1 && (t0.type === 'TupleTarget' || t0.type === 'Tuple')) {
+      if (t0.items.length === 2) return `${exprStr(t0.items[0])} ↔ ${exprStr(t0.items[1])} : 두 값을 서로 맞바꿉니다(교환)`
+      return `${exprStr(t0)} 에 ${pyRepr(val)} 를 나눠 담습니다(언패킹)`
+    }
+    if (st.targets.length > 1) return `${st.targets.map(exprStr).join(' = ')} = ${pyRepr(val)} (모두 같은 값으로)`
+    if (t0.type === 'Index') return `${exprStr(t0)} 칸에 ${pyRepr(val)} 저장`
+    const name = exprStr(t0)
+    const sv = st.value
+    if (sv.type === 'List') return `리스트 ${name} 생성 → ${pyRepr(val)}`
+    if (sv.type === 'Comp') return `${name} = 조건을 만족하는 값만 모은 리스트 → ${pyRepr(val)}`
+    if (sv.type === 'Call') return `${name} = ${exprStr(sv)} 의 결과 → ${pyRepr(val)}`
+    const src = exprStr(sv)
+    return src === pyRepr(val) ? `${name} = ${pyRepr(val)} 저장` : `${name} = ${src} → ${pyRepr(val)} 저장`
   }
 
   function exec(stmts, scope, depth, fnName) {
@@ -420,31 +485,46 @@ export function pyTrace(code, opts = {}) {
         touched = {}
         const val = evalExpr(st.value, scope)
         for (const tg of st.targets) assignTo(tg, val, scope)
-        record(st.line, scope, depth, fnName); return
+        record(st.line, scope, depth, fnName, assignNote(st, val, scope)); return
       }
       case 'AugAssign': {
         touched = {}
         const cur = evalExpr(st.target, scope)
         const rhs = evalExpr(st.value, scope)
-        let nv
-        if (st.op === '+' && isList(cur)) { for (const e of rhs) cur.push(e); nv = cur }
-        else nv = binop(st.op, cur, rhs)
-        if (!(st.op === '+' && isList(cur))) assignTo(st.target, nv, scope)
-        record(st.line, scope, depth, fnName); return
+        let nv, note
+        if (st.op === '+' && isList(cur)) {
+          for (const e of rhs) cur.push(e); nv = cur
+          note = `${exprStr(st.target)} 에 ${pyRepr(rhs)} 를 이어붙입니다 → ${pyRepr(nv)}`
+        } else {
+          nv = binop(st.op, cur, rhs)
+          assignTo(st.target, nv, scope)
+          note = `${exprStr(st.target)} : ${pyRepr(cur)} ${st.op} ${pyRepr(rhs)} = ${pyRepr(nv)} (${st.op}= 는 자기 자신에 연산)`
+        }
+        record(st.line, scope, depth, fnName, note); return
       }
       case 'Expr': {
         if (st.expr.type === 'Str') return // 독스트링은 무시
         touched = {}
         evalExpr(st.expr, scope)
-        record(st.line, scope, depth, fnName); return
+        let note = ''
+        const e = st.expr
+        if (e.type === 'Call' && e.callee.type === 'Name' && e.callee.v === 'print') {
+          note = `출력(print): ${e.args.map((a) => pyStr(quietEval(a, scope))).join(' ')}`
+        } else if (e.type === 'Call' && e.callee.type === 'Attr' && e.callee.name === 'append') {
+          note = `${exprStr(e.callee.obj)} 리스트 맨 뒤에 ${pyRepr(quietEval(e.args[0], scope))} 추가(append)`
+        }
+        record(st.line, scope, depth, fnName, note); return
       }
       case 'For': {
-        const iter = (touched = {}, evalExpr(st.iter, scope))
-        const items = toIterable(iter)
-        for (const it of items) {
+        touched = {}
+        const items = toIterable(evalExpr(st.iter, scope))
+        const total = items.length
+        const iterDesc = st.iter.type === 'Call' && st.iter.callee.type === 'Name' && st.iter.callee.v === 'range'
+          ? 'range = 정해진 횟수만큼 반복' : '리스트의 각 원소를 차례로'
+        for (let k = 0; k < items.length; k++) {
           touched = {}
-          assignTo(st.target, it, scope)
-          record(st.line, scope, depth, fnName)
+          assignTo(st.target, items[k], scope)
+          record(st.line, scope, depth, fnName, `반복 ${k + 1}/${total}회 : ${exprStr(st.target)} = ${pyRepr(items[k])} (${iterDesc})`)
           try { exec(st.body, scope, depth, fnName) }
           catch (e) { if (e instanceof Break) break; if (e instanceof Continue) continue; throw e }
         }
@@ -455,7 +535,7 @@ export function pyTrace(code, opts = {}) {
         while (true) {
           touched = {}
           const c = evalExpr(st.cond, scope)
-          record(st.line, scope, depth, fnName)
+          record(st.line, scope, depth, fnName, `while 조건 ${condStr(st.cond, scope)} → ${truthy(c) ? '참 → 본문 한 번 더 실행' : '거짓 → 반복 끝'}`)
           if (!truthy(c)) break
           if (guard++ > maxSteps) throw new Error('while 무한 루프')
           try { exec(st.body, scope, depth, fnName) }
@@ -466,21 +546,21 @@ export function pyTrace(code, opts = {}) {
       case 'If': {
         touched = {}
         const c = evalExpr(st.cond, scope)
-        record(st.line, scope, depth, fnName)
+        record(st.line, scope, depth, fnName, `if 조건 ${condStr(st.cond, scope)} → ${truthy(c) ? '참 → 안쪽 코드 실행' : '거짓 → 건너뜀'}`)
         if (truthy(c)) exec(st.body, scope, depth, fnName)
         else if (st.orelse && st.orelse.length) execStmt(st.orelse[0], scope, depth, fnName)
         return
       }
       case 'Else': exec(st.body, scope, depth, fnName); return
-      case 'Break': record(st.line, scope, depth, fnName); throw new Break()
-      case 'Continue': record(st.line, scope, depth, fnName); throw new Continue()
+      case 'Break': record(st.line, scope, depth, fnName, 'break → 반복을 즉시 빠져나갑니다'); throw new Break()
+      case 'Continue': record(st.line, scope, depth, fnName, 'continue → 이번 회차는 건너뛰고 다음 반복으로'); throw new Continue()
       case 'Return': {
         touched = {}
         const v = st.value ? evalExpr(st.value, scope) : null
-        record(st.line, scope, depth, fnName)
+        record(st.line, scope, depth, fnName, st.value ? `${exprStr(st.value)} → ${pyRepr(v)} 을(를) 반환(return)` : '함수 종료(return)')
         throw new Return(v)
       }
-      case 'Pass': record(st.line, scope, depth, fnName); return
+      case 'Pass': record(st.line, scope, depth, fnName, ''); return
       default: throw new Error('지원하지 않는 문장: ' + st.type)
     }
   }
@@ -608,14 +688,14 @@ export function pyTrace(code, opts = {}) {
 
   globalScope.__name__ = '__main__'
   try {
-    record(lines.length ? lines[0].lineNo : 1, globalScope, 0, null) // 시작
+    record(lines.length ? lines[0].lineNo : 1, globalScope, 0, null, '실행을 시작합니다. ▶ 다음으로 한 줄씩 진행하세요.') // 시작
     exec(program, globalScope, 0, null)
   } catch (e) {
     if (!(e instanceof Return)) return { error: '실행 오류: ' + e.message, steps, stdout }
   }
   // 최종 상태 스텝
   touched = {}
-  steps.push({ line: -1, vars: snapshot(globalScope), touched: {}, stdout, depth: 0, fn: null, final: true })
+  steps.push({ line: -1, vars: snapshot(globalScope), touched: {}, stdout, depth: 0, fn: null, final: true, note: '실행 완료 ✓ 최종 결과입니다.' })
   return { steps, stdout, output: stdout.trimEnd() }
 }
 

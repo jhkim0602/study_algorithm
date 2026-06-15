@@ -2,6 +2,21 @@ import { useEffect, useMemo, useState } from 'react'
 import { pyTrace, pyRepr } from '../../pytrace/pyTrace.js'
 import { useStepPlayer, VizControls } from './StepPlayer.jsx'
 
+// 코드에 자주 나오는 용어 풀이 (공부용)
+const GLOSSARY = [
+  { t: 'i, j', d: '반복/인덱스 변수. 배열의 몇 번째 위치인지를 가리키는 번호로 자주 쓰며, 보통 i는 바깥 반복, j는 안쪽 반복에 씁니다. (0부터 시작)' },
+  { t: 'range(n)', d: '0,1,…,n-1 의 정수 묶음. for가 n번 반복합니다. range(a, b)는 a부터 b-1까지.' },
+  { t: 'len(x)', d: 'x의 길이(원소 개수). 배열 길이는 len(arr).' },
+  { t: 'arr[i]', d: '배열 arr의 i번 위치 값. 인덱스는 0부터 시작하므로 첫 원소는 arr[0].' },
+  { t: 'arr[i:]', d: '슬라이스 — i번부터 끝까지 잘라낸 부분 리스트. arr[i:j]는 i부터 j-1까지.' },
+  { t: '+= / -=', d: '자기 자신에 더하기/빼기. cnt += 1 은 cnt = cnt + 1 과 같습니다.' },
+  { t: '// , %', d: '// 는 몫(정수 나눗셈), % 는 나머지. 예: 7//2=3, 7%2=1.' },
+  { t: 'a, b = b, a', d: '두 변수의 값을 한 번에 맞바꾸는 교환(swap) 문법.' },
+  { t: '.append(x)', d: '리스트 맨 뒤에 값 x를 덧붙입니다.' },
+  { t: 'def / return', d: 'def는 함수 정의, return은 함수가 결과를 돌려주며 끝내는 것.' },
+  { t: 'pivot', d: '퀵 정렬에서 기준이 되는 값. 이보다 작은 값/큰 값으로 나눕니다.' },
+]
+
 // 코드 한 줄씩 실행 + 좌측 자료구조(메모리) 단계별 시각화 (배열은 원소 이동 애니메이션)
 export default function CodeStepper({ code, title }) {
   const result = useMemo(() => pyTrace(code), [code])
@@ -25,6 +40,7 @@ export default function CodeStepper({ code, title }) {
   const tuples = entries.filter(([, v]) => v && v.__t === 'tuple')
 
   const [fs, setFs] = useState(false)
+  const [gloss, setGloss] = useState(false)
   useEffect(() => {
     if (!fs) return
     const onKey = (e) => { if (e.key === 'Escape') setFs(false) }
@@ -48,10 +64,13 @@ export default function CodeStepper({ code, title }) {
 
         <VizControls player={player} />
 
-        {activeSrc && (
+        {(activeSrc || frame.note) && (
           <div className="cs-note">
-            <span className="cs-note-tag">{frame.line}번 줄 실행</span>
-            <code>{activeSrc}</code>
+            <div className="cs-note-line">
+              {frame.line > 0 && <span className="cs-note-tag">{frame.line}번 줄</span>}
+              {activeSrc && <code>{activeSrc}</code>}
+            </div>
+            {frame.note && <div className="cs-note-desc">💡 {frame.note}</div>}
           </div>
         )}
 
@@ -117,7 +136,18 @@ export default function CodeStepper({ code, title }) {
 
         <div className="cs-help">
           <b>노란 줄</b> = 지금 실행되는 코드 · <b>노란 칸</b> = 지금 접근·비교 중인 값 · 칸이 자리를 옮기면 원소가 이동한 것입니다. 화면이 작으면 <b>⛶ 전체화면</b>으로 크게 보세요.
+          <button className="cs-gloss-btn" onClick={() => setGloss((v) => !v)}>{gloss ? '용어 도움말 닫기 ▲' : '📘 용어 도움말 (i, j, range, 슬라이스 …)'}</button>
         </div>
+        {gloss && (
+          <div className="cs-gloss">
+            {GLOSSARY.map((g) => (
+              <div className="cs-gloss-item" key={g.t}>
+                <code>{g.t}</code>
+                <span>{g.d}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   )

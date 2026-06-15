@@ -567,16 +567,27 @@ a:hover { text-decoration: underline; }
 
 /* 현재 단계 설명 */
 .cs-note {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  margin: 8px 0; padding: 7px 12px; border-radius: var(--radius-sm);
+  display: flex; flex-direction: column; gap: 5px;
+  margin: 8px 0; padding: 8px 12px; border-radius: var(--radius-sm);
   background: var(--bg-code); border: 1px solid var(--border); font-size: 13px;
 }
+.cs-note-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .cs-note-tag { font-size: 11px; font-weight: 800; color: var(--accent-text); background: var(--accent-soft); border-radius: 5px; padding: 2px 8px; white-space: nowrap; }
 .cs-note code { font-family: var(--font-mono); font-size: 13px; background: none; color: var(--code-text); }
+.cs-note-desc { font-size: 13px; color: var(--text); line-height: 1.55; font-weight: 500; }
 
-/* 작은 도움말 */
+/* 작은 도움말 + 용어 풀이 */
 .cs-help { margin-top: 10px; font-size: 12px; color: var(--text-soft); line-height: 1.6; }
 .cs-help b { color: var(--text); }
+.cs-gloss-btn {
+  display: inline-block; margin-left: 6px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+  color: var(--accent-text); background: none; border: none; padding: 0; text-decoration: underline;
+}
+.cs-gloss { margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-elev); padding: 6px 4px; }
+.cs-gloss-item { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 7px 12px; font-size: 13px; border-top: 1px solid var(--border); }
+.cs-gloss-item:first-child { border-top: none; }
+.cs-gloss-item code { font-family: var(--font-mono); font-weight: 700; color: var(--accent-text); background: var(--bg-inline-code); padding: 2px 6px; border-radius: 4px; height: fit-content; white-space: nowrap; }
+.cs-gloss-item span { color: var(--text-soft); line-height: 1.55; }
 
 /* 전체화면 모드 */
 .cs-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 999; backdrop-filter: blur(2px); }
