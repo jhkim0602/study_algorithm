@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { pyTrace, pyRepr } from '../../pytrace/pyTrace.js'
 import { useStepPlayer, VizControls } from './StepPlayer.jsx'
 
@@ -24,13 +24,36 @@ export default function CodeStepper({ code, title }) {
   const scalars = entries.filter(([, v]) => !Array.isArray(v) && !(v && v.__t === 'tuple'))
   const tuples = entries.filter(([, v]) => v && v.__t === 'tuple')
 
-  return (
-    <div className="viz codestepper">
-      <div className="viz-title">
-        <span className="viz-tag">실행</span> 코드 실행 추적기{title ? ` — ${title}` : ''}
-      </div>
+  const [fs, setFs] = useState(false)
+  useEffect(() => {
+    if (!fs) return
+    const onKey = (e) => { if (e.key === 'Escape') setFs(false) }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
+  }, [fs])
 
-      <VizControls player={player} />
+  const activeSrc = frame.line > 0 ? (lines[frame.line - 1] || '').trim() : ''
+
+  return (
+    <>
+      {fs && <div className="cs-backdrop" onClick={() => setFs(false)} />}
+      <div className={`viz codestepper${fs ? ' fullscreen' : ''}`}>
+        <div className="viz-title">
+          <span className="viz-tag">실행</span> 코드 실행 추적기{title ? ` — ${title}` : ''}
+          <button className="cs-fs-btn" onClick={() => setFs((v) => !v)} title={fs ? '닫기 (Esc)' : '전체화면으로 크게 보기'}>
+            {fs ? '✕ 닫기' : '⛶ 전체화면'}
+          </button>
+        </div>
+
+        <VizControls player={player} />
+
+        {activeSrc && (
+          <div className="cs-note">
+            <span className="cs-note-tag">{frame.line}번 줄 실행</span>
+            <code>{activeSrc}</code>
+          </div>
+        )}
 
       <div className="cs-body">
         {/* 좌: 자료구조 / 메모리 */}
@@ -45,7 +68,7 @@ export default function CodeStepper({ code, title }) {
           )}
 
           {arrays.map(([name, arr]) => (
-            <ArrayView key={name} name={name} arr={arr} ids={stepIds[name] || arr.map((_, i) => i)} touched={frame.touched?.[name] || []} />
+            <ArrayView key={name} name={name} arr={arr} ids={stepIds[name] || arr.map((_, i) => i)} touched={frame.touched?.[name] || []} big={fs} />
           ))}
 
           {tuples.length > 0 && (
@@ -91,11 +114,16 @@ export default function CodeStepper({ code, title }) {
           </div>
         </div>
       </div>
-    </div>
+
+        <div className="cs-help">
+          <b>노란 줄</b> = 지금 실행되는 코드 · <b>노란 칸</b> = 지금 접근·비교 중인 값 · 칸이 자리를 옮기면 원소가 이동한 것입니다. 화면이 작으면 <b>⛶ 전체화면</b>으로 크게 보세요.
+        </div>
+      </div>
+    </>
   )
 }
 
-function ArrayView({ name, arr, ids, touched }) {
+function ArrayView({ name, arr, ids, touched, big }) {
   const CAP = 64 // 임의 파이썬 결과라 폭 무제한 → 렌더 셀 수 캡
   const truncated = arr.length > CAP
   const shownArr = truncated ? arr.slice(0, CAP) : arr
@@ -104,7 +132,8 @@ function ArrayView({ name, arr, ids, touched }) {
   let maxV = 1 // 스프레드(Math.max(...)) 대신 루프 — 대형 배열 RangeError 방지
   if (numeric) for (let i = 0; i < shownArr.length; i++) { const a = Math.abs(shownArr[i]); if (a > maxV) maxV = a }
   const tset = new Set(touched)
-  const CELL = numeric ? 42 : 56
+  const CELL = numeric ? (big ? 58 : 42) : (big ? 76 : 56)
+  const barMax = big ? 92 : 50
   const els = shownIds
     .map((id, idx) => ({ id, idx, value: shownArr[idx], lift: tset.has(idx) }))
     .sort((a, b) => a.id - b.id)
@@ -117,14 +146,14 @@ function ArrayView({ name, arr, ids, touched }) {
       {arr.length === 0 ? (
         <div className="cs-cell empty">비어 있음 []</div>
       ) : (
-        <div className={`cs-track${numeric ? ' tall' : ''}`} style={{ width: shownArr.length * CELL + 'px' }}>
+        <div className={`cs-track${numeric ? ' tall' : ''}${big ? ' big' : ''}`} style={{ width: shownArr.length * CELL + 'px' }}>
           {els.map((el) => (
             <div
               key={el.id}
               className={`cs-el${el.lift ? ' touched' : ''}`}
-              style={{ width: CELL + 'px', transform: `translateX(${el.idx * CELL}px) translateY(${el.lift ? -8 : 0}px)` }}
+              style={{ width: CELL + 'px', transform: `translateX(${el.idx * CELL}px) translateY(${el.lift ? (big ? -12 : -8) : 0}px)` }}
             >
-              {numeric && <div className="cs-bar" style={{ height: `${14 + (Math.abs(el.value) / maxV) * 50}px` }} />}
+              {numeric && <div className="cs-bar" style={{ height: `${14 + (Math.abs(el.value) / maxV) * barMax}px` }} />}
               <div className="cs-cell-val">{pyRepr(el.value)}</div>
               <div className="cs-cell-idx">{el.idx}</div>
             </div>
