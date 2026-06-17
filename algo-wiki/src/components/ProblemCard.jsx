@@ -21,6 +21,7 @@ export default function ProblemCard({
   const isChoice = type === 'choice' || type === 'code'
 
   const [runOpen, setRunOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
   const inExam = examMode && !examSubmitted // 시험 진행 중 — 정오 숨김
   const answered = selected != null && selected !== undefined
   const show = !inExam && (revealed || answered) // 정답/해설 노출 여부
@@ -135,7 +136,14 @@ export default function ProblemCard({
               {examSubmitted && answered && <span className={`ans-result ${isCorrect ? 'ok' : 'no'}`}>{isCorrect ? ' (정답)' : ' (오답)'}</span>}
             </div>
             <div className="expl">{explanation}</div>
-            <ProblemDetail detail={detail} />
+            {detail && (
+              <div className="detail-wrap">
+                <button className="reveal-btn detail-toggle" onClick={() => setDetailOpen((v) => !v)}>
+                  {detailOpen ? '자세한 풀이 접기 ▲' : '자세한 풀이 보기 ▼'}
+                </button>
+                {detailOpen && <ProblemDetail detail={detail} />}
+              </div>
+            )}
             {concepts?.length > 0 && (
               <div className="concept-tags">
                 <span className="ct-label">필요 개념</span>

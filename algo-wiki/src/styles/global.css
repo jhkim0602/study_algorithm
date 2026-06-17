@@ -259,6 +259,10 @@ a:hover { text-decoration: underline; }
   font-size: 13px; font-weight: 800; color: #fff; background: var(--viz-compare); }
 .wn-star-count { color: var(--viz-compare); font-weight: 800; font-size: 14px; }
 
+/* 자세한 풀이 토글 */
+.detail-wrap { margin-top: 12px; }
+.detail-toggle { font-size: 13px; }
+
 .content {
   width: 100%;
   max-width: var(--content-max);
@@ -384,7 +388,7 @@ a:hover { text-decoration: underline; }
   font-size: 14px; font-weight: 600;
 }
 .solve-feedback.ok { background: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok); }
-.solve-feedback.no { background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); border: 1px solid var(--danger); }
+.solve-feedback.no { background: none; color: var(--danger); border: 1px solid var(--danger); }
 .solve-feedback b { color: var(--ok); }
 .solve-reset {
   margin-left: auto; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer;

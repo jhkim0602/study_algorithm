@@ -6,8 +6,6 @@ export default function ProblemDetail({ detail }) {
 
   return (
     <div className="detail">
-      <h5 className="d-head">자세한 풀이</h5>
-
       {summary && <p className="d-summary" dangerouslySetInnerHTML={{ __html: summary }} />}
 
       {reasoning?.length > 0 && (
