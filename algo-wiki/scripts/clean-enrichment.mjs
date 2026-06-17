@@ -61,7 +61,7 @@ for (const [k, o] of Object.entries(raw.groupViz || {})) {
   out.groupViz[k] = { narration, viz }
 }
 
-writeFileSync(join(ROOT, 'notebooklm', '_enrichment.json'), JSON.stringify(out, null, 2), 'utf8')
+writeFileSync(join(__dir, 'notebooklm-enrichment.json'), JSON.stringify(out, null, 2), 'utf8')
 
 // 최종 검증 리포트
 console.log('정제 완료 → notebooklm/_enrichment.json')

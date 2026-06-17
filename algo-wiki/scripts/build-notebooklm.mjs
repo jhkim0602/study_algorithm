@@ -19,9 +19,9 @@ mkdirSync(OUT_DIR, { recursive: true })
 
 const OPT_NUM = ['①', '②', '③', '④', '⑤', '⑥']
 
-// ── enrichment(선택) ──
+// ── enrichment(선택) — 빌드 캐시는 scripts/ 에 두어 산출물 폴더를 깨끗이 유지 ──
 let ENRICH = { chapterIntros: {}, groupViz: {} }
-const enrichPath = join(OUT_DIR, '_enrichment.json')
+const enrichPath = join(__dir, 'notebooklm-enrichment.json')
 if (existsSync(enrichPath)) {
   try {
     ENRICH = JSON.parse(readFileSync(enrichPath, 'utf8'))
@@ -341,7 +341,8 @@ function appendix() {
 const chapterMd = chapters.map(renderChapter)
 const master = [header(), ...chapterMd.map((m, i) => m + (i < chapterMd.length - 1 ? '\n\n===\n' : '')), '\n', appendix()].join('\n')
 
-writeFileSync(join(ROOT, 'NotebookLM_학습노트.md'), master, 'utf8')
+const masterPath = join(OUT_DIR, '00_전체_NotebookLM학습노트.md')
+writeFileSync(masterPath, master, 'utf8')
 chapters.forEach((c, i) => {
   const fname = `${c.id.toUpperCase()}_${c.title.replace(/^Ch\d+\s*/, '').replace(/\s+/g, '')}.md`
   writeFileSync(join(OUT_DIR, fname), header().split('---')[0] + '\n---\n\n' + chapterMd[i], 'utf8')
@@ -352,6 +353,6 @@ const probCount = chapters.reduce((s, c) => s + c.problems.length, 0)
 const codeCount = chapters.flatMap((c) => c.problems).filter((p) => p.type === 'code').length
 const treeCount = chapters.flatMap((c) => c.problems).filter((p) => p.tree).length
 console.log('생성 완료')
-console.log('  마스터:', join(ROOT, 'NotebookLM_학습노트.md'), `(${master.length.toLocaleString()}자)`)
-console.log('  챕터별:', OUT_DIR)
+console.log('  마스터:', masterPath, `(${master.length.toLocaleString()}자)`)
+console.log('  폴더:', OUT_DIR)
 console.log(`  문제 ${probCount} · 코드추적 ${codeCount} · 트리그림 ${treeCount}`)
