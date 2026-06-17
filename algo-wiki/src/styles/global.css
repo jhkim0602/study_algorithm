@@ -698,6 +698,42 @@ a:hover { text-decoration: underline; }
 }
 
 /* ============================================================
+   시험대비 요약노트
+   ============================================================ */
+.illust {
+  margin: 14px 0; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg-elev); text-align: center;
+}
+.illust-svg svg { max-width: 100%; height: auto; }
+.illust-cap { margin-top: 8px; font-size: 12.5px; color: var(--text-soft); }
+
+.sum-group { margin: 22px 0; padding-top: 6px; border-top: 2px solid var(--border); }
+.sum-group > h3 { margin-top: 12px; }
+.sum-group-mini { margin: 14px 0; }
+.sum-group-mini h4 { margin: 14px 0 6px; }
+.sum-gist { font-size: 14.5px; margin: 8px 0; }
+.sum-mnemonic {
+  font-size: 13.5px; margin: 8px 0; padding: 8px 12px; border-radius: var(--radius-sm);
+  background: var(--warn-soft); border: 1px solid var(--border); border-left: 4px solid var(--warn); color: var(--text);
+}
+.sum-mnemonic b { color: var(--warn); margin-right: 6px; }
+
+.tip-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); padding: 14px 16px; margin: 12px 0; box-shadow: var(--shadow); }
+.tip-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tip-prompt { font-size: 14.5px; font-weight: 600; margin: 2px 0 8px; line-height: 1.55; }
+.tip-body { margin-top: 8px; padding: 10px 12px; background: var(--bg-code); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.tip-focus { font-size: 14px; font-weight: 700; margin: 0 0 8px; color: var(--text); }
+.tip-steps { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.tip-steps li { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; color: var(--text-soft); line-height: 1.55; }
+.tip-steps li code { font-family: var(--font-mono); font-size: 0.86em; background: var(--bg-inline-code); padding: 1px 5px; border-radius: 4px; }
+.tip-label {
+  flex-shrink: 0; font-size: 11px; font-weight: 800; color: var(--accent-text); background: var(--accent-soft);
+  border-radius: 5px; padding: 2px 8px; white-space: nowrap; min-width: 56px; text-align: center;
+}
+.tip-answer { font-size: 14px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
+.tip-answer b { color: var(--ok); }
+
+/* ============================================================
    학습 기록 (진도·모의고사·오답노트)
    ============================================================ */
 .progress-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elev); padding: 16px 18px; box-shadow: var(--shadow); margin: 12px 0; }

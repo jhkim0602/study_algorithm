@@ -17,6 +17,9 @@ export default function Sidebar({ open, route, navigate, onClose }) {
         <button className={`sidebar-home${route === '' ? ' active' : ''}`} onClick={() => go('')}>
           개요 (Home)
         </button>
+        <button className={`sidebar-home${route === 'summary' ? ' active' : ''}`} onClick={() => go('summary')}>
+          통합 요약노트
+        </button>
         <button className={`sidebar-home${route === 'practice' ? ' active' : ''}`} onClick={() => go('practice')}>
           통합 문제 (Practice)
         </button>
@@ -38,6 +41,7 @@ export default function Sidebar({ open, route, navigate, onClose }) {
               </button>
               {active && (
                 <div className="nav-sub">
+                  <a href={`#/summary/${c.slug}`} onClick={(e) => { e.preventDefault(); go(`summary/${c.slug}`) }}>요약노트 (시험대비)</a>
                   <a href="#concept" onClick={(e) => { e.preventDefault(); jumpTo('concept'); onClose?.() }}>개요·개념</a>
                   {c.subtopics?.map((st) => (
                     <a

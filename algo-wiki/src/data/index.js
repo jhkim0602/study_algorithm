@@ -13,6 +13,7 @@ import { details as d07 } from './details/ch07.js'
 import { details as d08 } from './details/ch08.js'
 import { details as d09 } from './details/ch09.js'
 import { SUBTOPICS } from './subtopics/index.js'
+import { SUMMARY } from './summary/index.js'
 
 function compose(chapter, richConcept, detailMap) {
   if (richConcept) chapter.concept = richConcept // 세분화 개념이 있으면 교체
@@ -38,6 +39,11 @@ for (const c of [ch06, ch07, ch08, ch09]) {
 export function findSubtopic(chapterSlug, subSlug) {
   const c = chapterBySlug[chapterSlug]
   return c?.subtopics?.find((s) => s.slug === subSlug)
+}
+
+// 시험대비 요약노트 부착
+for (const c of [ch06, ch07, ch08, ch09]) {
+  c.summary = SUMMARY[c.id] || { cheatsheet: [], groups: [], tips: {} }
 }
 
 // 위키에 표시되는 챕터 순서

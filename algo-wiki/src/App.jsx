@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar.jsx'
 import Home from './components/Home.jsx'
 import ChapterView from './components/ChapterView.jsx'
 import SubtopicView from './components/SubtopicView.jsx'
+import SummaryView from './components/SummaryView.jsx'
 import Practice from './components/Practice.jsx'
 import Exam from './components/Exam.jsx'
 import WrongNotes from './components/WrongNotes.jsx'
@@ -94,9 +95,12 @@ export default function App() {
   const isExam = route === 'exam'
   const isWrong = route === 'wrong'
   const [chSlug, subSlug] = route.split('/')
-  const chapter = chapterBySlug[chSlug]
+  const isSummary = chSlug === 'summary'
+  const summaryChapter = isSummary && subSlug ? chapterBySlug[subSlug] : null
+  const chapter = isSummary ? null : chapterBySlug[chSlug]
   const subtopic = subSlug && chapter ? chapter.subtopics.find((s) => s.slug === subSlug) : null
-  const crumb = isPractice ? '통합 문제' : isExam ? '통합 모의고사' : isWrong ? '오답노트'
+  const crumb = isSummary ? (summaryChapter ? `요약노트 › ${summaryChapter.title}` : '통합 요약노트')
+    : isPractice ? '통합 문제' : isExam ? '통합 모의고사' : isWrong ? '오답노트'
     : subtopic ? `${chapter.title} › ${subtopic.title}` : chapter ? chapter.title : '개요'
 
   return (
@@ -120,7 +124,9 @@ export default function App() {
         </header>
 
         <main>
-          {isExam ? (
+          {isSummary ? (
+            <SummaryView key={subSlug || 'all'} chapter={summaryChapter} navigate={navigate} />
+          ) : isExam ? (
             <Exam
               getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
               examHistory={examHistory} addExamResult={addExamResult} updateWrong={updateWrong}

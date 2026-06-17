@@ -83,6 +83,13 @@ function Block({ block }) {
           <span dangerouslySetInnerHTML={{ __html: block.html }} />
         </div>
       )
+    case 'svg':
+      return (
+        <figure className="illust">
+          <div className="illust-svg" dangerouslySetInnerHTML={{ __html: block.svg }} />
+          {block.caption && <figcaption className="illust-cap" dangerouslySetInnerHTML={{ __html: block.caption }} />}
+        </figure>
+      )
     case 'code':
       return <RunnableCode code={block.code} caption={block.caption} lang={block.lang || 'python'} />
 
