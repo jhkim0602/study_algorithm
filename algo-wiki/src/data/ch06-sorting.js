@@ -253,7 +253,7 @@ export const ch06 = {
     // ── 코드형 문제 ──
     {
       no: 21, type: 'code', topic: '버블 정렬',
-      prompt: '다음 코드의 실행 결과는? (버블 정렬)',
+      prompt: '다음 코드의 실행 결과는?',
       code:
         'arr = [5, 3, 4, 1, 2]\n' +
         'for i in range(2):\n' +
@@ -268,7 +268,7 @@ export const ch06 = {
     },
     {
       no: 22, type: 'code', topic: '버블 정렬',
-      prompt: '다음 코드의 실행 결과는? (버블 정렬 - 비교 횟수)',
+      prompt: '다음 코드의 실행 결과는?',
       code:
         'arr = [1, 2, 3, 4]\n' +
         'cnt = 0\n' +
@@ -285,7 +285,7 @@ export const ch06 = {
     },
     {
       no: 23, type: 'code', topic: '버블 정렬',
-      prompt: '다음 코드의 실행 결과는? (버블 정렬 - 조기 종료)',
+      prompt: '다음 코드의 실행 결과는?',
       code:
         'arr = [1, 2, 3, 4]\n' +
         'cnt = 0\n' +
@@ -306,7 +306,7 @@ export const ch06 = {
     },
     {
       no: 24, type: 'code', topic: '선택 정렬',
-      prompt: '다음 코드의 실행 결과는? (선택 정렬)',
+      prompt: '다음 코드의 실행 결과는?',
       code:
         'arr = [4, 2, 5, 1, 3]\n' +
         'for i in range(2):\n' +
@@ -323,7 +323,7 @@ export const ch06 = {
     },
     {
       no: 25, type: 'code', topic: '선택 정렬',
-      prompt: '다음 코드가 오름차순 선택 정렬이 되기 위해 빈칸에 들어갈 값은? (선택 정렬 - 빈칸 추론)',
+      prompt: '다음 코드가 오름차순 정렬이 되기 위해 빈칸에 들어갈 값은?',
       code:
         'arr = [3, 1, 4, 2]\n' +
         'for i in range(len(arr)-1):\n' +
@@ -349,7 +349,7 @@ export const ch06 = {
     },
     {
       no: 26, type: 'code', topic: '선택 정렬',
-      prompt: '다음 코드의 출력 결과는? (선택 정렬 - 비교 횟수)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [5, 4, 3, 2, 1]\n' +
         'cnt = 0\n' +
@@ -364,7 +364,7 @@ export const ch06 = {
     },
     {
       no: 27, type: 'code', topic: '삽입 정렬',
-      prompt: '다음 코드의 출력 결과는? (삽입 정렬)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [4, 2, 3, 1]\n' +
         'for i in range(1, 3):\n' +
@@ -382,7 +382,7 @@ export const ch06 = {
     },
     {
       no: 28, type: 'code', topic: '삽입 정렬',
-      prompt: '다음 코드의 출력 결과는? (삽입 정렬 - 이동 횟수)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [5, 3, 4, 1]\n' +
         'move = 0\n' +
@@ -402,7 +402,7 @@ export const ch06 = {
     },
     {
       no: 29, type: 'code', topic: '삽입 정렬',
-      prompt: '오름차순 삽입 정렬이 되기 위해 빈칸에 들어갈 것은? (삽입 정렬 - 빈칸 추론)',
+      prompt: '오름차순 정렬이 되기 위해 빈칸에 들어갈 것은?',
       code:
         'arr = [3, 1, 2]\n' +
         'for i in range(1, len(arr)):\n' +
@@ -430,7 +430,7 @@ export const ch06 = {
     },
     {
       no: 30, type: 'code', topic: '쉘 정렬',
-      prompt: '다음 코드의 출력 결과는? (쉘 정렬)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [8, 1, 6, 2, 5, 3]\n' +
         'gap = 3\n' +
@@ -449,7 +449,7 @@ export const ch06 = {
     },
     {
       no: 31, type: 'code', topic: '퀵 정렬',
-      prompt: '다음 코드의 출력 결과는? (퀵 정렬 - partition 결과)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [6, 3, 8, 2, 5]\n' +
         'pivot = arr[0]\n' +
@@ -468,7 +468,7 @@ export const ch06 = {
     },
     {
       no: 32, type: 'code', topic: '퀵 정렬',
-      prompt: '다음 코드의 출력 결과는? (퀵 정렬 - 재귀 결과)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'def quick_sort(arr):\n' +
         '    if len(arr) <= 1:\n' +
@@ -485,7 +485,7 @@ export const ch06 = {
     },
     {
       no: 33, type: 'code', topic: '퀵 정렬',
-      prompt: '빈칸에 들어갈 값은? (퀵 정렬 - 빈칸 추론)',
+      prompt: '빈칸에 들어갈 값은?',
       code:
         'def quick_sort(arr):\n' +
         '    if len(arr) <= 1:\n' +
@@ -511,7 +511,7 @@ export const ch06 = {
     },
     {
       no: 34, type: 'code', topic: '퀵 정렬',
-      prompt: '다음 코드의 출력 결과는? (퀵 정렬 - 제자리 partition)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [6, 4, 8, 3, 5]\n' +
         'pivot = arr[0]\n' +
@@ -533,7 +533,7 @@ export const ch06 = {
     },
     {
       no: 35, type: 'code', topic: '병합 정렬',
-      prompt: '다음 코드의 출력 결과는? (병합 정렬 - merge 과정)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'left = [1, 4, 7]\n' +
         'right = [2, 3, 6]\n' +
@@ -556,7 +556,7 @@ export const ch06 = {
     },
     {
       no: 36, type: 'code', topic: '병합 정렬',
-      prompt: '다음 코드의 출력 결과는? (병합 정렬 - 안정성)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         "left = [(2, 'A'), (3, 'B')]\n" +
         "right = [(2, 'C'), (4, 'D')]\n" +
@@ -584,7 +584,7 @@ export const ch06 = {
     },
     {
       no: 37, type: 'code', topic: '힙 정렬',
-      prompt: '다음 코드의 출력 결과는? (힙 정렬 - down heap 1회)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [3, 8, 7, 1, 5]\n' +
         'parent = 0\n' +
@@ -601,7 +601,7 @@ export const ch06 = {
     },
     {
       no: 38, type: 'code', topic: '힙 정렬',
-      prompt: '다음 코드의 출력 결과는? (힙 정렬 - heapify)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [4, 10, 3, 5, 1]\n' +
         'n = len(arr)\n' +
@@ -621,7 +621,7 @@ export const ch06 = {
     },
     {
       no: 39, type: 'code', topic: '도수 정렬',
-      prompt: '다음 코드의 출력 결과는? (도수 정렬 - 도수 배열)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'arr = [2, 0, 1, 2, 1, 0, 2]\n' +
         'count = [0] * 3\n' +
@@ -635,7 +635,7 @@ export const ch06 = {
     },
     {
       no: 40, type: 'code', topic: '도수 정렬',
-      prompt: '다음 코드의 출력 결과는? (도수 정렬 - 누적 도수)',
+      prompt: '다음 코드의 출력 결과는?',
       code:
         'count = [2, 2, 3]\n' +
         'for i in range(1, len(count)):\n' +
