@@ -44,19 +44,25 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
   const [showConcepts, setShowConcepts] = useState(false)
   const [mode, setMode] = useState('list') // 'list' | 'card'
 
-  const filtered = useMemo(() => {
-    let list = allProblems.filter(
+  // 1) 대단원·유형·개념 필터 + (선택)셔플 — answers와 무관하게 순서를 고정.
+  //    answers를 의존성에 넣으면 답을 고를 때마다 다시 섞여 카드가 바뀌므로 분리한다.
+  const ordered = useMemo(() => {
+    const list = allProblems.filter(
       (p) =>
         chapSel.has(p.chapterId) &&
         typeSel.has(p.type) &&
-        (conceptSel.size === 0 || (p.concepts || []).some((c) => conceptSel.has(c))) &&
-        (statusSel === 'all' || problemStatus(p, answers[`${p.chapterId}-${p.no}`]) === statusSel),
+        (conceptSel.size === 0 || (p.concepts || []).some((c) => conceptSel.has(c))),
     )
-    if (shuffled) list = shuffle(list)
-    return list
+    return shuffled ? shuffle(list) : list
     // reshuffleKey를 의존성에 포함해 "다시 섞기"가 동작하게 한다
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapSel, typeSel, conceptSel, statusSel, answers, shuffled, reshuffleKey])
+  }, [chapSel, typeSel, conceptSel, shuffled, reshuffleKey])
+
+  // 2) 복습 상태 필터(answers 의존) — 순서는 그대로 유지
+  const filtered = useMemo(() => {
+    if (statusSel === 'all') return ordered
+    return ordered.filter((p) => problemStatus(p, answers[`${p.chapterId}-${p.no}`]) === statusSel)
+  }, [ordered, statusSel, answers])
 
   const allRevealed = filtered.length > 0 && filtered.every((p) => isRevealed(p.chapterId, p.no))
   const pairs = filtered.map((p) => ({ chapterId: p.chapterId, no: p.no }))
