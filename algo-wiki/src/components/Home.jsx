@@ -5,6 +5,7 @@ export default function Home({ navigate, wrongSet = {}, examHistory = [] }) {
     .flatMap((c) => c.problems)
     .reduce((acc, p) => ((acc[p.type] = (acc[p.type] || 0) + 1), acc), {})
   const wrongCount = Object.keys(wrongSet).length
+  const starredCount = Object.values(wrongSet).filter((v) => v && typeof v === 'object' && v.starred).length
   const lastExam = examHistory[examHistory.length - 1]
 
   return (
@@ -39,7 +40,7 @@ export default function Home({ navigate, wrongSet = {}, examHistory = [] }) {
           <h2>학습 현황</h2>
           <div className="progress-card">
             <div className="progress-meta">
-              <span>오답노트 <b style={{ color: 'var(--danger)' }}>{wrongCount}</b>문제</span>
+              <span>오답노트 <b style={{ color: 'var(--danger)' }}>{wrongCount}</b>문제{starredCount > 0 && <> · ★ 반복 <b>{starredCount}</b></>}</span>
               <span>모의고사 <b>{examHistory.length}</b>회 응시</span>
               {lastExam && <span>최근 정답률 <b>{lastExam.accuracy}%</b> ({lastExam.correct}/{lastExam.total})</span>}
             </div>

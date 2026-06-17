@@ -10,6 +10,13 @@ import Practice from './components/Practice.jsx'
 import Exam from './components/Exam.jsx'
 import WrongNotes from './components/WrongNotes.jsx'
 
+// 오답노트 항목 형태: { count, starred }. 구버전(true) 값도 안전하게 누적한다.
+function bumpWrong(cur, star) {
+  const count = (cur && typeof cur === 'object' ? cur.count : cur ? 1 : 0) + 1
+  const starred = (cur && typeof cur === 'object' ? cur.starred : false) || !!star
+  return { count, starred }
+}
+
 export default function App() {
   const [theme, setTheme] = useLocalStorage('algowiki.theme', 'light')
   // 개념·통합문제 풀이/펼침은 세션 한정(새로 들어오면 초기화) — 저장하지 않음
@@ -78,11 +85,15 @@ export default function App() {
     setExamHistory((prev) => [...prev, res].slice(-50))
   }, [setExamHistory])
 
-  // 오답노트: 모의고사에서 틀린 문제는 추가, 맞힌 문제는 제거 (영구 저장)
+  // 오답노트: 틀린 문제 누적 추가, 맞힌 문제 제거 (영구 저장)
+  // star=true 면 별표(반복 오답) 표시. 연습·카드·모의고사·오답노트 모두 사용.
+  const markWrong = useCallback((key, { star = false } = {}) => {
+    setWrongSet((prev) => ({ ...prev, [key]: bumpWrong(prev[key], star) }))
+  }, [setWrongSet])
   const updateWrong = useCallback((addKeys, removeKeys) => {
     setWrongSet((prev) => {
       const next = { ...prev }
-      for (const k of addKeys) next[k] = true
+      for (const k of addKeys) next[k] = bumpWrong(next[k], false)
       for (const k of removeKeys) delete next[k]
       return next
     })
@@ -133,13 +144,13 @@ export default function App() {
             />
           ) : isWrong ? (
             <WrongNotes
-              wrongSet={wrongSet} removeWrong={removeWrong} navigate={navigate}
+              wrongSet={wrongSet} removeWrong={removeWrong} markWrong={markWrong} navigate={navigate}
               isRevealed={isRevealed} toggle={toggle}
               getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
             />
           ) : isPractice ? (
             <Practice
-              answers={answers} clearAnswers={clearAnswers}
+              answers={answers} clearAnswers={clearAnswers} markWrong={markWrong}
               isRevealed={isRevealed} toggle={toggle} setManyRevealed={setManyRevealed}
               getAnswer={getAnswer} selectAnswer={selectAnswer} resetAnswer={resetAnswer}
             />

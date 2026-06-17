@@ -3,7 +3,7 @@ import ProblemCard from './ProblemCard.jsx'
 
 // 카드형 풀이: 한 문제씩 한 화면에 보여주고 ◀ ▶ 로 넘긴다.
 // 보기 클릭 시 즉시 채점, '정답·해설 보기'로 풀이 확인 — 동작은 ProblemCard 재사용.
-export default function CardSolver({ list, resetKey, isRevealed, toggle, getAnswer, selectAnswer, resetAnswer }) {
+export default function CardSolver({ list, resetKey, isRevealed, toggle, getAnswer, selectAnswer, resetAnswer, markWrong }) {
   const [idx, setIdx] = useState(0)
   const topRef = useRef(null)
 
@@ -52,7 +52,7 @@ export default function CardSolver({ list, resetKey, isRevealed, toggle, getAnsw
         revealed={isRevealed(p.chapterId, p.no)}
         onToggle={(no) => toggle(p.chapterId, no)}
         selected={getAnswer(p.chapterId, p.no)}
-        onSelect={(no, v) => selectAnswer(p.chapterId, no, v)}
+        onSelect={(no, v) => { selectAnswer(p.chapterId, no, v); if (v !== p.answer) markWrong?.(`${p.chapterId}-${p.no}`) }}
         onReset={(no) => resetAnswer(p.chapterId, no)}
       />
 

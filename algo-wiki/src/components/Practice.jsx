@@ -34,7 +34,7 @@ function useToggleSet(initial = []) {
   return [set, toggle, clear, setSet]
 }
 
-export default function Practice({ answers, clearAnswers, isRevealed, toggle, setManyRevealed, getAnswer, selectAnswer, resetAnswer }) {
+export default function Practice({ answers, clearAnswers, markWrong, isRevealed, toggle, setManyRevealed, getAnswer, selectAnswer, resetAnswer }) {
   const [chapSel, toggleChap] = useToggleSet(chapters.map((c) => c.id)) // 기본: 전체 챕터
   const [typeSel, toggleType] = useToggleSet(TYPES) // 기본: 전체 유형
   const [conceptSel, toggleConcept, clearConcepts] = useToggleSet([]) // 기본: 전체 개념
@@ -43,6 +43,12 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
   const [reshuffleKey, setReshuffleKey] = useState(0)
   const [showConcepts, setShowConcepts] = useState(false)
   const [mode, setMode] = useState('list') // 'list' | 'card'
+  const [filtersOpen, setFiltersOpen] = useState(true) // 필터 설정 펼침 여부
+
+  // 모드 전환 시 카드 모드면 설정을 접어 문제에 집중
+  const switchMode = (m) => { setMode(m); setFiltersOpen(m === 'list') }
+  // 틀린 답이면 오답노트에 추가
+  const onPick = (p) => (no, v) => { selectAnswer(p.chapterId, no, v); if (v !== p.answer) markWrong?.(`${p.chapterId}-${p.no}`) }
 
   // 1) 대단원·유형·개념 필터 + (선택)셔플 — answers와 무관하게 순서를 고정.
   //    answers를 의존성에 넣으면 답을 고를 때마다 다시 섞여 카드가 바뀌므로 분리한다.
@@ -80,11 +86,15 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
         <div className="filter-row">
           <span className="filter-label">보기</span>
           <div className="chip-group">
-            <button className={`fchip${mode === 'list' ? ' on' : ''}`} onClick={() => setMode('list')}>📋 리스트</button>
-            <button className={`fchip${mode === 'card' ? ' on' : ''}`} onClick={() => setMode('card')}>🃏 카드 풀기</button>
+            <button className={`fchip${mode === 'list' ? ' on' : ''}`} onClick={() => switchMode('list')}>📋 리스트</button>
+            <button className={`fchip${mode === 'card' ? ' on' : ''}`} onClick={() => switchMode('card')}>🃏 카드 풀기</button>
           </div>
+          <button className="fchip ghost" style={{ marginLeft: 'auto' }} onClick={() => setFiltersOpen((o) => !o)}>
+            {filtersOpen ? '설정 접기 ▲' : '설정 펼치기 ▼'}
+          </button>
         </div>
 
+        {filtersOpen && (<>
         <div className="filter-row">
           <span className="filter-label">대단원</span>
           <div className="chip-group">
@@ -151,12 +161,13 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
             ))}
           </div>
         )}
+        </>)}
       </div>
 
       <div className="problem-section-head">
         <h2 style={{ margin: 0, border: 'none', padding: 0 }}>결과 {filtered.length}문항</h2>
         <span className="spacer" />
-        <button className="btn" onClick={clearAnswers}>풀이 기록 초기화</button>
+        <button className="btn" onClick={clearAnswers}>전체 풀이 상태 초기화</button>
         {mode === 'list' && (
           <button className="btn" onClick={() => setManyRevealed(pairs, !allRevealed)} disabled={filtered.length === 0}>
             {allRevealed ? '전체 정답 접기' : '전체 정답 펼치기'}
@@ -175,6 +186,7 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
           getAnswer={getAnswer}
           selectAnswer={selectAnswer}
           resetAnswer={resetAnswer}
+          markWrong={markWrong}
         />
       ) : (
         filtered.map((p) => (
@@ -186,7 +198,7 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
             revealed={isRevealed(p.chapterId, p.no)}
             onToggle={(no) => toggle(p.chapterId, no)}
             selected={getAnswer(p.chapterId, p.no)}
-            onSelect={(no, v) => selectAnswer(p.chapterId, no, v)}
+            onSelect={onPick(p)}
             onReset={(no) => resetAnswer(p.chapterId, no)}
           />
         ))
