@@ -483,6 +483,12 @@ a:hover { text-decoration: underline; }
   font-family: var(--font-mono); font-size: 13px; line-height: 1.65;
   background: none; padding: 0; color: var(--code-text);
 }
+/* 요약노트 형광펜: 풀이전략의 '형광펜' 조각이 포함된 코드 줄을 강조 */
+.codeblock code .hl-line { display: block; margin: 0 -16px; padding: 0 16px; }
+.codeblock code .hl-line.hot {
+  background: color-mix(in srgb, var(--viz-compare) 32%, transparent);
+  box-shadow: inset 3px 0 0 var(--viz-compare);
+}
 
 /* ============================================================
    시각화 공통 (viz)

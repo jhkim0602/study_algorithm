@@ -1,9 +1,43 @@
+import hljs from 'highlight.js/lib/core'
+import python from 'highlight.js/lib/languages/python'
 import { chapters, TYPE_LABEL } from '../data/index.js'
 import { Blocks } from './ConceptSection.jsx'
-import CodeBlock from './CodeBlock.jsx'
 import MiniTree from './MiniTree.jsx'
 
+hljs.registerLanguage('python', python)
+
 const OPT_NUM = ['①', '②', '③', '④']
+
+// 형광펜 스텝의 <code> 안 코드 조각을 추출 → 코드 줄 하이라이트에 사용
+function highlightMarks(tip) {
+  if (!tip?.steps) return []
+  const marks = []
+  for (const s of tip.steps) {
+    if (s.label !== '형광펜') continue
+    for (const m of (s.text || '').matchAll(/<code>([\s\S]*?)<\/code>/g)) marks.push(m[1])
+  }
+  return marks
+}
+
+// 코드 블록 — 형광펜 조각이 포함된 줄을 노란색으로 강조
+function HighlightedCode({ code, marks }) {
+  const lines = code.split('\n')
+  const norm = (s) => s.replace(/\s+/g, '')
+  const nm = (marks || []).map(norm).filter((x) => x.length >= 3)
+  return (
+    <div className="codeblock">
+      <div className="codeblock-bar"><span className="lang">python</span></div>
+      <pre><code className="hljs language-python">
+        {lines.map((ln, i) => {
+          const hot = nm.some((m) => norm(ln).includes(m))
+          let html
+          try { html = hljs.highlight(ln === '' ? ' ' : ln, { language: 'python' }).value } catch { html = ln || ' ' }
+          return <span key={i} className={`hl-line${hot ? ' hot' : ''}`} dangerouslySetInnerHTML={{ __html: html }} />
+        })}
+      </code></pre>
+    </div>
+  )
+}
 
 function Illust({ svg, caption }) {
   if (!svg) return null
@@ -80,7 +114,26 @@ function TipCard({ problem, tip }) {
       <p className="tip-prompt">{prompt}</p>
       {figure && <div className="problem-figure"><span className="fig-label">그림</span>{figure}</div>}
       {tree && <div className="problem-figure" style={{ borderStyle: 'solid' }}><MiniTree tree={tree} /></div>}
-      {code && <CodeBlock code={code} lang="python" />}
+      {code && <HighlightedCode code={code} marks={highlightMarks(tip)} />}
+
+      {isChoice && (
+        <ol className="options">
+          {options.map((opt, i) => (
+            <li key={i} className={`option locked${i + 1 === answer ? ' correct' : ''}`}>
+              <span className="opt-num">{OPT_NUM[i]}</span>
+              <span className="opt-text">{opt}</span>
+              {i + 1 === answer && <span className="opt-check">정답</span>}
+            </li>
+          ))}
+        </ol>
+      )}
+      {type === 'ox' && (
+        <div className="ox-options">
+          {['O', 'X'].map((v) => (
+            <span key={v} className={`ox-chip${answer === v ? ' correct' : ''}`}>{v}</span>
+          ))}
+        </div>
+      )}
 
       {tip ? (
         <div className="tip-body">
