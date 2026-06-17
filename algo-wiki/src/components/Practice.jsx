@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { chapters, allProblems, allConcepts, TYPE_LABEL } from '../data/index.js'
 import { problemStatus } from '../utils/progress.js'
 import ProblemCard from './ProblemCard.jsx'
+import CardSolver from './CardSolver.jsx'
 
 const TYPES = ['choice', 'code', 'ox']
 const STATUSES = [
@@ -41,6 +42,7 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
   const [shuffled, setShuffled] = useState(false)
   const [reshuffleKey, setReshuffleKey] = useState(0)
   const [showConcepts, setShowConcepts] = useState(false)
+  const [mode, setMode] = useState('list') // 'list' | 'card'
 
   const filtered = useMemo(() => {
     let list = allProblems.filter(
@@ -58,6 +60,8 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
 
   const allRevealed = filtered.length > 0 && filtered.every((p) => isRevealed(p.chapterId, p.no))
   const pairs = filtered.map((p) => ({ chapterId: p.chapterId, no: p.no }))
+  // 카드 모드에서 필터가 바뀌면 첫 문제로 되돌리기 위한 키
+  const resetKey = [[...chapSel].sort().join(','), [...typeSel].sort().join(','), [...conceptSel].sort().join(','), statusSel, shuffled, reshuffleKey].join('|')
 
   return (
     <div className="content">
@@ -67,6 +71,14 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
       </p>
 
       <div className="filter-panel">
+        <div className="filter-row">
+          <span className="filter-label">보기</span>
+          <div className="chip-group">
+            <button className={`fchip${mode === 'list' ? ' on' : ''}`} onClick={() => setMode('list')}>📋 리스트</button>
+            <button className={`fchip${mode === 'card' ? ' on' : ''}`} onClick={() => setMode('card')}>🃏 카드 풀기</button>
+          </div>
+        </div>
+
         <div className="filter-row">
           <span className="filter-label">대단원</span>
           <div className="chip-group">
@@ -139,13 +151,25 @@ export default function Practice({ answers, clearAnswers, isRevealed, toggle, se
         <h2 style={{ margin: 0, border: 'none', padding: 0 }}>결과 {filtered.length}문항</h2>
         <span className="spacer" />
         <button className="btn" onClick={clearAnswers}>풀이 기록 초기화</button>
-        <button className="btn" onClick={() => setManyRevealed(pairs, !allRevealed)} disabled={filtered.length === 0}>
-          {allRevealed ? '전체 정답 접기' : '전체 정답 펼치기'}
-        </button>
+        {mode === 'list' && (
+          <button className="btn" onClick={() => setManyRevealed(pairs, !allRevealed)} disabled={filtered.length === 0}>
+            {allRevealed ? '전체 정답 접기' : '전체 정답 펼치기'}
+          </button>
+        )}
       </div>
 
       {filtered.length === 0 ? (
         <p style={{ color: 'var(--text-soft)', marginTop: '20px' }}>조건에 맞는 문제가 없습니다. 필터를 조정해 보세요.</p>
+      ) : mode === 'card' ? (
+        <CardSolver
+          list={filtered}
+          resetKey={resetKey}
+          isRevealed={isRevealed}
+          toggle={toggle}
+          getAnswer={getAnswer}
+          selectAnswer={selectAnswer}
+          resetAnswer={resetAnswer}
+        />
       ) : (
         filtered.map((p) => (
           <ProblemCard
