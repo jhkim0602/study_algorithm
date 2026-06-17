@@ -50,6 +50,9 @@ export const allProblems = chapters.flatMap((c) =>
   c.problems.map((p) => ({ ...p, chapterId: c.id, chapterTitle: c.title, chapterSlug: c.slug })),
 )
 
+// 키(chapterId-no) → 문제 (오답노트 조회용)
+export const problemByKey = Object.fromEntries(allProblems.map((p) => [`${p.chapterId}-${p.no}`, p]))
+
 // 전체 개념 태그 모음 (통합 문제 필터용)
 export const allConcepts = [...new Set(allProblems.flatMap((p) => p.concepts || []))].sort((a, b) =>
   a.localeCompare(b, 'ko'),

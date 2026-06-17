@@ -1,11 +1,11 @@
 import { chapters, totalProblems, TYPE_LABEL } from '../data/index.js'
-import { computeStats } from '../utils/progress.js'
 
-export default function Home({ navigate, answers = {} }) {
+export default function Home({ navigate, wrongSet = {}, examHistory = [] }) {
   const typeCounts = chapters
     .flatMap((c) => c.problems)
     .reduce((acc, p) => ((acc[p.type] = (acc[p.type] || 0) + 1), acc), {})
-  const stats = computeStats(answers)
+  const wrongCount = Object.keys(wrongSet).length
+  const lastExam = examHistory[examHistory.length - 1]
 
   return (
     <div className="content">
@@ -34,22 +34,19 @@ export default function Home({ navigate, answers = {} }) {
         ))}
       </div>
 
-      {stats.solved > 0 && (
+      {(examHistory.length > 0 || wrongCount > 0) && (
         <>
-          <h2>내 진도</h2>
+          <h2>학습 현황</h2>
           <div className="progress-card">
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${Math.round((stats.solved / stats.total) * 100)}%` }} />
-            </div>
             <div className="progress-meta">
-              <span>푼 문제 <b>{stats.solved}</b> / {stats.total}</span>
-              <span>정답 <b style={{ color: 'var(--ok)' }}>{stats.correct}</b> · 오답 <b style={{ color: 'var(--danger)' }}>{stats.wrong}</b></span>
-              <span>정답률 <b>{stats.accuracy}%</b></span>
+              <span>오답노트 <b style={{ color: 'var(--danger)' }}>{wrongCount}</b>문제</span>
+              <span>모의고사 <b>{examHistory.length}</b>회 응시</span>
+              {lastExam && <span>최근 정답률 <b>{lastExam.accuracy}%</b> ({lastExam.correct}/{lastExam.total})</span>}
             </div>
             <div className="progress-actions">
-              <button className="btn" onClick={() => navigate('practice')}>이어서 풀기</button>
-              {stats.wrong > 0 && <button className="btn" onClick={() => navigate('wrong')}>오답노트 ({stats.wrong})</button>}
               <button className="btn" onClick={() => navigate('exam')}>모의고사</button>
+              {wrongCount > 0 && <button className="btn" onClick={() => navigate('wrong')}>오답노트 ({wrongCount})</button>}
+              <button className="btn" onClick={() => navigate('practice')}>통합 문제</button>
             </div>
           </div>
         </>

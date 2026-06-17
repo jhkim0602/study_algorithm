@@ -20,7 +20,7 @@ function useToggleSet(initial) {
 }
 
 // 통합 모의고사: 범위·문항수 선택 → 즉시 채점 없이 풀기 → 제출 시 점수·정답률·해설
-export default function Exam({ getAnswer, selectAnswer, resetAnswer, examHistory, addExamResult }) {
+export default function Exam({ getAnswer, selectAnswer, resetAnswer, examHistory, addExamResult, updateWrong }) {
   const [phase, setPhase] = useState('setup') // setup | taking | done
   const [chapSel, toggleChap] = useToggleSet(chapters.map((c) => c.id))
   const [typeSel, toggleType] = useToggleSet(TYPES)
@@ -55,6 +55,10 @@ export default function Exam({ getAnswer, selectAnswer, resetAnswer, examHistory
     const res = { total, correct, accuracy, wrong }
     setResult(res)
     addExamResult({ at: new Date().toISOString(), scopeLabel, total, correct, accuracy })
+    // 오답노트 갱신: 틀린 문제 추가, 맞힌 문제 제거 (영구 저장)
+    const wrongKeys = examSet.filter((p) => { const s = getAnswer(p.chapterId, p.no); return s != null && s !== p.answer }).map((p) => `${p.chapterId}-${p.no}`)
+    const correctKeys = examSet.filter((p) => getAnswer(p.chapterId, p.no) === p.answer).map((p) => `${p.chapterId}-${p.no}`)
+    updateWrong(wrongKeys, correctKeys)
     setPhase('done')
     window.scrollTo({ top: 0 })
   }
