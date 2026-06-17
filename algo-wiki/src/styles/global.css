@@ -253,9 +253,7 @@ a:hover { text-decoration: underline; }
 .cs-hint { margin-top: 10px; font-size: 12.5px; color: var(--text-faint); text-align: center; }
 
 /* 오답노트 별표(반복 오답) */
-.wn-item { margin-bottom: 4px; }
-.wn-item.starred .problem-card { border-color: var(--amber, #e0af68); box-shadow: 0 0 0 1px color-mix(in srgb, var(--viz-compare) 40%, transparent); }
-.wn-star { display: inline-block; margin: 2px 0 -4px; padding: 4px 12px; border-radius: 999px 999px 0 0;
+.wn-star { display: inline-block; margin: 0 0 8px; padding: 5px 14px; border-radius: 999px;
   font-size: 13px; font-weight: 800; color: #fff; background: var(--viz-compare); }
 .wn-star-count { color: var(--viz-compare); font-weight: 800; font-size: 14px; }
 

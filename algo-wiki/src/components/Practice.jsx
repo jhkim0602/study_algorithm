@@ -186,7 +186,7 @@ export default function Practice({ answers, clearAnswers, markWrong, isRevealed,
           getAnswer={getAnswer}
           selectAnswer={selectAnswer}
           resetAnswer={resetAnswer}
-          markWrong={markWrong}
+          onAnswer={(p, v) => { if (v !== p.answer) markWrong?.(`${p.chapterId}-${p.no}`) }}
         />
       ) : (
         filtered.map((p) => (
